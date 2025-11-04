@@ -1,0 +1,9 @@
+{
+  "python.analysis.extraPaths": [
+    "./bin",
+    "./lib",
+    "./package/bin",
+    "./package/lib",
+    "./output/TA-securepro-eMASS/lib"
+  ]
+}

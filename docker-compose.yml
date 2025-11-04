@@ -1,0 +1,24 @@
+version: "3.7"
+services:
+  splunk:
+    build:
+      context: .
+      dockerfile: Dockerfile-splunk-local
+      args:
+        SPLUNK_APP_PACKAGE: output/TA-securepro-eMASS
+        SPLUNK_VERSION: 9.2.1
+    container_name: splunk-emass
+    ports:
+      - "8000:8000"
+      - "8089:8089"
+    environment:
+      SPLUNK_PASSWORD: Password123!
+      SPLUNK_START_ARGS: --accept-license
+      SPLUNK_GENERAL_TERMS: --accept-sgt-current-at-splunk-com
+    networks:
+      - emass-net
+    volumes:
+      - ./output/TA-securepro-eMASS:/opt/splunk/etc/apps/TA-securepro-eMASS
+networks:
+  emass-net:
+    external: true

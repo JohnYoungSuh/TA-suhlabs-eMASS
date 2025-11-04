@@ -1,0 +1,10 @@
+splunk-add-on-ucc-framework==6.0.1
+addonfactory-splunk-conf-parser-lib
+dunamai
+pyyaml
+colorama
+jsonschema
+packaging
+certifi
+jinja2
+defusedxml

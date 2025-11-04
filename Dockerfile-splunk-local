@@ -1,0 +1,8 @@
+ARG SPLUNK_VERSION=9.2.1
+FROM splunk/splunk:${SPLUNK_VERSION}
+ARG SPLUNK_APP_PACKAGE
+
+# Create tarball and use Splunk's official app installation method
+COPY ${SPLUNK_APP_PACKAGE} /tmp/TA-securepro-eMASS
+RUN cd /tmp && tar -czf TA-securepro-eMASS.tgz TA-securepro-eMASS
+ENV SPLUNK_APPS_URL /tmp/TA-securepro-eMASS.tgz

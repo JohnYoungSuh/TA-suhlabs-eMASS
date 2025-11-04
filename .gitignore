@@ -1,0 +1,9 @@
+output/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+*.tar.gz
+.pytest_cache/
+*.log
+package/local/

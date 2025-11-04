@@ -1,0 +1,13 @@
+Dockerfile*
+docker-compose.yml
+Makefile
+requirements.txt
+.git*
+.editorconfig
+README.md
+tests/
+output/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store

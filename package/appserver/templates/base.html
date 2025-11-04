@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}SecurePro eMASS Technology Add-on{% endblock %}</title>
+    {% block css %}{% endblock %}
+    <link rel="stylesheet" type="text/css" href="{{SPLUNKWEB_URL_PREFIX}}/static/app/TA-securepro-eMASS/css/custom.css">
+</head>
+<body>
+    {% block content %}{% endblock %}
+    {% block scripts %}{% endblock %}
+    <style>
+        /* Additional inline styles to hide UCC branding */
+        footer, [data-test="footer"] {
+            display: none !important;
+        }
+    </style>
+</body>
+</html>

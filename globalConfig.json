@@ -1,0 +1,151 @@
+{
+    "meta": {
+        "name": "TA-securepro-eMASS",
+        "restRoot": "TA_securepro_eMASS",
+        "displayName": "SecurePro eMASS Technology Add-on",
+        "version": "1.0.0",
+        "schemaVersion": "0.0.10"
+    },
+    "pages": {
+        "configuration": {
+            "title": "Configuration",
+            "description": "Configure eMASS API credentials and connection settings",
+            "tabs": [
+                {
+                    "name": "account",
+                    "title": "eMASS Account",
+                    "table": {
+                        "header": [
+                            {
+                                "field": "name",
+                                "label": "Account Name"
+                            },
+                            {
+                                "field": "system_id",
+                                "label": "System ID"
+                            },
+                            {
+                                "field": "base_url",
+                                "label": "Base URL"
+                            },
+                            {
+                                "field": "index",
+                                "label": "Default Index"
+                            }
+                        ],
+                        "actions": [
+                            "edit",
+                            "delete",
+                            "clone"
+                        ]
+                    },
+                    "entity": [
+                        {
+                            "field": "name",
+                            "label": "Account Name",
+                            "type": "text",
+                            "help": "Enter a unique name for this eMASS account configuration",
+                            "required": true,
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 100,
+                                    "errorMsg": "Account name must be between 1 and 100 characters"
+                                },
+                                {
+                                    "type": "regex",
+                                    "pattern": "^[a-zA-Z]\\w*$",
+                                    "errorMsg": "Account name must start with a letter and contain only alphanumeric characters and underscores"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "base_url",
+                            "label": "eMASS Base URL",
+                            "type": "text",
+                            "help": "Base URL for the eMASS API (e.g., http://localhost:4010 or https://emass.mil)",
+                            "required": true,
+                            "defaultValue": "http://localhost:4010",
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 500,
+                                    "errorMsg": "Base URL must be between 1 and 500 characters"
+                                },
+                                {
+                                    "type": "regex",
+                                    "pattern": "^https?://[^\\s/$.?#].[^\\s]*$",
+                                    "errorMsg": "Base URL must be a valid HTTP or HTTPS URL"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "system_id",
+                            "label": "System ID",
+                            "type": "text",
+                            "help": "eMASS System ID (e.g., 55090). The API endpoint will be constructed as: {base_url}/api/systems/{system_id}/poams",
+                            "required": true,
+                            "defaultValue": "55090",
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 50,
+                                    "errorMsg": "System ID must be between 1 and 50 characters"
+                                },
+                                {
+                                    "type": "regex",
+                                    "pattern": "^[0-9]+$",
+                                    "errorMsg": "System ID must contain only numeric characters"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "api_key",
+                            "label": "API Key",
+                            "type": "text",
+                            "help": "eMASS API key for authentication (will be encrypted and stored securely)",
+                            "required": true,
+                            "encrypted": true,
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 8192,
+                                    "errorMsg": "API Key must be between 1 and 8192 characters"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "index",
+                            "label": "Default Index",
+                            "type": "singleSelect",
+                            "help": "Select the Splunk index where POA&M data will be stored. You can select an existing index or type a new name to create one.",
+                            "required": true,
+                            "defaultValue": "main",
+                            "options": {
+                                "endpointUrl": "data/indexes",
+                                "denyList": "^_.*$",
+                                "createSearchChoice": true
+                            },
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 80,
+                                    "errorMsg": "Index name must be between 1 and 80 characters"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "loggingTab",
+                    "label": "Log Level"
+                }
+            ]
+        }
+    }
+}
