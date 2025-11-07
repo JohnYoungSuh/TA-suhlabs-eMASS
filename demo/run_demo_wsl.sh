@@ -150,9 +150,27 @@ if [ "$SPLUNK_READY" = false ]; then
     exit 1
 fi
 
-# Wait a bit more for UI to be fully ready
-echo -e "${YELLOW}Waiting for Splunk UI to be fully ready...${NC}"
-sleep 10
+# Wait for Web UI to be fully ready (not just management API)
+echo -e "${YELLOW}Waiting for Splunk Web UI to be fully ready...${NC}"
+WEB_UI_READY=false
+for i in {1..30}; do
+    if curl -s http://localhost:8000 > /dev/null 2>&1; then
+        echo -e "${GREEN}✓ Splunk Web UI is ready!${NC}"
+        WEB_UI_READY=true
+        break
+    fi
+    echo -n "."
+    sleep 2
+done
+
+if [ "$WEB_UI_READY" = false ]; then
+    echo ""
+    echo -e "${YELLOW}⚠️  Web UI check timed out, but continuing anyway...${NC}"
+fi
+
+# Extra buffer time to ensure everything is stable
+echo -e "${YELLOW}Waiting extra 15 seconds for UI to stabilize...${NC}"
+sleep 15
 
 cd demo
 

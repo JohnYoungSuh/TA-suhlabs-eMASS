@@ -30,9 +30,43 @@ async def wait_and_type(page, selector, text, delay=100):
     await page.type(selector, text, delay=delay)
 
 
+async def wait_for_splunk_ui_ready():
+    """Wait for Splunk UI to be actually ready (not just API)"""
+    import aiohttp
+    print("⏳ Waiting for Splunk UI to be fully ready...")
+
+    max_attempts = 30
+    for attempt in range(max_attempts):
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(SPLUNK_URL, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                    if response.status == 200:
+                        text = await response.text()
+                        # Check if we get actual HTML, not an error page
+                        if '<html' in text.lower() and 'splunk' in text.lower():
+                            print("✓ Splunk UI is ready!")
+                            # Extra wait to ensure everything is loaded
+                            await asyncio.sleep(10)
+                            return True
+        except Exception as e:
+            pass
+
+        if attempt < max_attempts - 1:
+            print(f"  Attempt {attempt + 1}/{max_attempts} - waiting...")
+            await asyncio.sleep(5)
+
+    print("❌ Splunk UI did not become ready in time")
+    return False
+
+
 async def create_demo(headless=False):
     """Create automated demo video"""
     print("🎬 Starting demo video creation...")
+
+    # Wait for Splunk UI to be ready first
+    if not await wait_for_splunk_ui_ready():
+        print("❌ Splunk UI is not ready. Aborting.")
+        return
 
     # Ensure output directory exists
     output_dir = Path("./demo_output")
@@ -56,8 +90,8 @@ async def create_demo(headless=False):
         try:
             # ===== SCENE 1: Login to Splunk =====
             print("📝 Scene 1: Logging into Splunk...")
-            await page.goto(SPLUNK_URL)
-            await page.wait_for_load_state("networkidle")
+            await page.goto(SPLUNK_URL, wait_until="networkidle", timeout=60000)
+            await asyncio.sleep(3)  # Extra wait for page to settle
 
             # Login
             await wait_and_type(page, 'input[name="username"]', SPLUNK_USERNAME)
