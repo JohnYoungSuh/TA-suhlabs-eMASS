@@ -21,4 +21,4 @@ services:
       - ./output/TA-securepro-eMASS:/opt/splunk/etc/apps/TA-securepro-eMASS
 networks:
   emass-net:
-    external: true
+    driver: bridge
