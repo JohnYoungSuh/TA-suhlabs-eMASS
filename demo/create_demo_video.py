@@ -23,11 +23,20 @@ VIDEO_PATH = "./demo_output/emass_demo.webm"
 SLOW_MO = 1000  # Slow down actions by 1 second for visibility
 
 
-async def wait_and_type(page, selector, text, delay=100):
+async def wait_and_type(page, selector, text, delay=100, timeout=60000):
     """Type text slowly for better visibility"""
-    await page.wait_for_selector(selector, state="visible")
+    await page.wait_for_selector(selector, state="visible", timeout=timeout)
     await page.fill(selector, "")  # Clear first
     await page.type(selector, text, delay=delay)
+
+
+async def take_screenshot(page, name):
+    """Take a screenshot for debugging"""
+    try:
+        await page.screenshot(path=f"./demo_output/debug_{name}.png")
+        print(f"  📸 Screenshot saved: debug_{name}.png")
+    except Exception as e:
+        print(f"  ⚠️  Could not take screenshot: {e}")
 
 
 async def wait_for_splunk_ui_ready():
@@ -104,56 +113,96 @@ async def create_demo(headless=False):
             print("🔧 Scene 2: Navigating to add-on configuration...")
 
             # Go to Apps menu
-            await page.goto(f"{SPLUNK_URL}/en-US/app/TA-securepro-eMASS/configuration")
-            await page.wait_for_load_state("networkidle")
-            await asyncio.sleep(3)
+            await page.goto(f"{SPLUNK_URL}/en-US/app/TA-securepro-eMASS/configuration", timeout=60000)
+            await page.wait_for_load_state("networkidle", timeout=60000)
+            await asyncio.sleep(5)  # Extra wait for UCC to load
+            await take_screenshot(page, "01_configuration_page")
 
             # ===== SCENE 3: Configure Account with System ID =====
             print("⚙️  Scene 3: Configuring eMASS account with System ID...")
 
+            # Wait for page to be fully loaded
+            await asyncio.sleep(3)
+
             # Click on Configuration tab (should already be there)
             try:
-                config_tab = await page.wait_for_selector('text=Configuration', timeout=5000)
+                config_tab = await page.wait_for_selector('text=Configuration', timeout=10000)
                 if config_tab:
                     await config_tab.click()
-                    await asyncio.sleep(1)
-            except:
-                pass  # Already on configuration page
+                    await asyncio.sleep(2)
+            except Exception as e:
+                print(f"   - Configuration tab not found (may already be selected): {e}")
+
+            await take_screenshot(page, "02_before_add_button")
 
             # Click "Add" button to create new account
             add_button_selectors = [
                 'button:has-text("Add")',
                 'button[label="Add"]',
                 'button[data-test="add"]',
-                '.btn:has-text("Add")'
+                'button[aria-label="Add"]',
+                '.btn:has-text("Add")',
+                'button.add-btn',
+                '[data-test-btn="add"]'
             ]
 
+            add_button_clicked = False
             for selector in add_button_selectors:
                 try:
-                    await page.wait_for_selector(selector, timeout=3000)
+                    print(f"   - Trying add button selector: {selector}")
+                    await page.wait_for_selector(selector, timeout=5000)
                     await page.click(selector)
+                    add_button_clicked = True
+                    print(f"   ✓ Clicked Add button with selector: {selector}")
                     break
-                except:
+                except Exception as e:
+                    print(f"   - Selector failed: {e}")
                     continue
 
-            await asyncio.sleep(2)
+            if not add_button_clicked:
+                print("   ❌ Could not find Add button!")
+                await take_screenshot(page, "03_add_button_not_found")
+                raise Exception("Add button not found")
+
+            await asyncio.sleep(5)  # Wait for modal to appear
+            await take_screenshot(page, "04_after_add_button")
 
             # Fill in account details
             print("   - Entering account name...")
-            await wait_and_type(page, 'input[name="name"]', DEMO_ACCOUNT_NAME, delay=150)
-            await asyncio.sleep(1)
+            try:
+                await wait_and_type(page, 'input[name="name"]', DEMO_ACCOUNT_NAME, delay=150, timeout=60000)
+                await asyncio.sleep(1)
+            except Exception as e:
+                print(f"   ❌ Could not enter account name: {e}")
+                await take_screenshot(page, "05_name_field_error")
+                raise
 
             print("   - Entering System ID: 55090...")
-            await wait_and_type(page, 'input[name="system_id"]', SYSTEM_ID, delay=150)
-            await asyncio.sleep(1)
+            try:
+                await wait_and_type(page, 'input[name="system_id"]', SYSTEM_ID, delay=150, timeout=60000)
+                await asyncio.sleep(1)
+            except Exception as e:
+                print(f"   ❌ Could not enter system ID: {e}")
+                await take_screenshot(page, "06_system_id_error")
+                raise
 
             print("   - Entering Base URL...")
-            await wait_and_type(page, 'input[name="base_url"]', BASE_URL, delay=100)
-            await asyncio.sleep(1)
+            try:
+                await wait_and_type(page, 'input[name="base_url"]', BASE_URL, delay=100, timeout=60000)
+                await asyncio.sleep(1)
+            except Exception as e:
+                print(f"   ❌ Could not enter base URL: {e}")
+                await take_screenshot(page, "07_base_url_error")
+                raise
 
             print("   - Entering API Key...")
-            await wait_and_type(page, 'input[name="api_key"]', API_KEY, delay=100)
-            await asyncio.sleep(1)
+            try:
+                await wait_and_type(page, 'input[name="api_key"]', API_KEY, delay=100, timeout=60000)
+                await asyncio.sleep(1)
+            except Exception as e:
+                print(f"   ❌ Could not enter API key: {e}")
+                await take_screenshot(page, "08_api_key_error")
+                raise
 
             # Select index
             print("   - Selecting index...")
