@@ -1,0 +1,49 @@
+version: "3.7"
+
+services:
+  # Mock eMASS API Server
+  mock-emass-api:
+    image: python:3.9-slim
+    container_name: mock-emass-api
+    working_dir: /app
+    command: python mock_emass_api.py
+    volumes:
+      - ./:/app
+    ports:
+      - "4010:4010"
+    networks:
+      - emass-demo-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4010/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Splunk with TA-securepro-eMASS
+  splunk:
+    build:
+      context: ..
+      dockerfile: Dockerfile-splunk-local
+      args:
+        SPLUNK_APP_PACKAGE: output/TA-securepro-eMASS
+        SPLUNK_VERSION: 9.2.1
+    container_name: splunk-emass-demo
+    ports:
+      - "8000:8000"
+      - "8089:8089"
+    environment:
+      SPLUNK_PASSWORD: Password123!
+      SPLUNK_START_ARGS: --accept-license
+      SPLUNK_GENERAL_TERMS: --accept-sgt-current-at-splunk-com
+    networks:
+      - emass-demo-net
+    volumes:
+      - ../output/TA-securepro-eMASS:/opt/splunk/etc/apps/TA-securepro-eMASS
+    depends_on:
+      - mock-emass-api
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  emass-demo-net:
+    driver: bridge
