@@ -9,7 +9,8 @@ Creates a professional demo video without watermarks showing:
 import time
 import cv2
 import numpy as np
-from PIL import ImageGrab
+import io
+from PIL import Image
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -33,10 +34,11 @@ FPS = 20
 
 
 class ScreenRecorder:
-    """Records screen to video file using OpenCV"""
+    """Records browser screenshots to video file using OpenCV"""
 
-    def __init__(self, output_path, fps=20):
+    def __init__(self, output_path, driver, fps=20):
         self.output_path = output_path
+        self.driver = driver
         self.fps = fps
         self.recording = False
         self.writer = None
@@ -51,9 +53,10 @@ class ScreenRecorder:
 
     def _record(self):
         """Recording loop"""
-        # Get screen size
-        screen = ImageGrab.grab()
-        width, height = screen.size
+        # Get browser window size from first screenshot
+        screenshot_png = self.driver.get_screenshot_as_png()
+        screenshot = Image.open(io.BytesIO(screenshot_png))
+        width, height = screenshot.size
 
         # Create video writer
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
@@ -65,16 +68,21 @@ class ScreenRecorder:
         )
 
         while self.recording:
-            # Capture screen
-            img = ImageGrab.grab()
-            frame = np.array(img)
-            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+            try:
+                # Capture browser screenshot
+                screenshot_png = self.driver.get_screenshot_as_png()
+                screenshot = Image.open(io.BytesIO(screenshot_png))
+                frame = np.array(screenshot)
+                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
-            # Write frame
-            self.writer.write(frame)
+                # Write frame
+                self.writer.write(frame)
 
-            # Control frame rate
-            time.sleep(1/self.fps)
+                # Control frame rate
+                time.sleep(1/self.fps)
+            except Exception as e:
+                print(f"⚠️  Screenshot capture error: {e}")
+                time.sleep(1/self.fps)
 
     def stop(self):
         """Stop recording"""
@@ -123,14 +131,14 @@ def create_demo(headless=False):
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--window-size=1920,1080')
 
-    # Start screen recorder
-    recorder = ScreenRecorder(VIDEO_PATH, fps=FPS)
-    recorder.start()
-    time.sleep(2)  # Give recorder time to initialize
-
     # Initialize WebDriver
     driver = webdriver.Chrome(options=chrome_options)
     driver.maximize_window()
+
+    # Start screen recorder (must be after driver is created)
+    recorder = ScreenRecorder(VIDEO_PATH, driver, fps=FPS)
+    recorder.start()
+    time.sleep(2)  # Give recorder time to initialize
 
     try:
         # ===== SCENE 1: Login to Splunk =====
