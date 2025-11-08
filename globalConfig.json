@@ -4,7 +4,7 @@
         "restRoot": "TA_securepro_eMASS",
         "displayName": "SecurePro eMASS Technology Add-on",
         "version": "1.0.0",
-        "schemaVersion": "0.0.8"
+        "schemaVersion": "0.0.9"
     },
     "pages": {
         "configuration": {
@@ -169,35 +169,6 @@
                 {
                     "name": "emass_poam",
                     "title": "eMASS POA&M Collection",
-                    "table": {
-                        "header": [
-                            {
-                                "field": "name",
-                                "label": "Name"
-                            },
-                            {
-                                "field": "account",
-                                "label": "Account"
-                            },
-                            {
-                                "field": "interval",
-                                "label": "Interval"
-                            },
-                            {
-                                "field": "index",
-                                "label": "Index"
-                            },
-                            {
-                                "field": "disabled",
-                                "label": "Status"
-                            }
-                        ],
-                        "actions": [
-                            "edit",
-                            "delete",
-                            "clone"
-                        ]
-                    },
                     "entity": [
                         {
                             "field": "name",
@@ -235,7 +206,16 @@
                             "type": "text",
                             "help": "Collection interval in seconds (e.g., 300 for 5 minutes)",
                             "required": true,
-                            "defaultValue": "300"
+                            "defaultValue": "300",
+                            "validators": [
+                                {
+                                    "type": "number",
+                                    "range": [
+                                        1,
+                                        31536000
+                                    ]
+                                }
+                            ]
                         },
                         {
                             "field": "index",
@@ -260,7 +240,36 @@
                         }
                     ]
                 }
-            ]
+            ],
+            "table": {
+                "actions": [
+                    "edit",
+                    "delete",
+                    "clone"
+                ],
+                "header": [
+                    {
+                        "label": "Input Name",
+                        "field": "name"
+                    },
+                    {
+                        "label": "Account",
+                        "field": "account"
+                    },
+                    {
+                        "label": "Interval",
+                        "field": "interval"
+                    },
+                    {
+                        "label": "Index",
+                        "field": "index"
+                    },
+                    {
+                        "label": "Status",
+                        "field": "disabled"
+                    }
+                ]
+            }
         }
     }
 }
