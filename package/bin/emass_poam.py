@@ -83,6 +83,7 @@ class EMASS_POAM(smi.Script):
                 base_url = account_config.get("base_url", "").rstrip("/")
                 system_id = account_config.get("system_id")
                 api_key = account_config.get("api_key")
+                user_uid = account_config.get("user_uid")  # Optional field
 
                 # Use account's default index if specified, otherwise use input's index
                 account_index = account_config.get("index")
@@ -99,7 +100,7 @@ class EMASS_POAM(smi.Script):
                 logger.info(f"Constructed API URL: {api_url}")
 
                 # Collect data from API
-                poams = self._collect_poams(api_url, api_key)
+                poams = self._collect_poams(api_url, api_key, user_uid)
 
                 if poams:
                     logger.info(f"Collected {len(poams)} POA&Ms from {api_url}")
@@ -147,6 +148,7 @@ class EMASS_POAM(smi.Script):
                     "base_url": account_stanza.get("base_url"),
                     "system_id": account_stanza.get("system_id"),
                     "api_key": account_stanza.get("api_key"),
+                    "user_uid": account_stanza.get("user_uid"),  # Optional field
                     "index": account_stanza.get("index"),
                 }
 
@@ -156,13 +158,14 @@ class EMASS_POAM(smi.Script):
             logger.error(f"Error retrieving account config for '{account_name}': {str(e)}")
             return None
 
-    def _collect_poams(self, api_url: str, api_key: str) -> list:
+    def _collect_poams(self, api_url: str, api_key: str, user_uid: str = None) -> list:
         """
         Collect POA&Ms from eMASS API
 
         Args:
             api_url: Full API endpoint URL
             api_key: API key for authentication
+            user_uid: User UID for authentication (optional)
 
         Returns:
             List of POA&M dictionaries
@@ -172,6 +175,10 @@ class EMASS_POAM(smi.Script):
                 "api-key": api_key,
                 "Accept": "application/json"
             }
+
+            # Add user-uid header if provided
+            if user_uid:
+                headers["user-uid"] = user_uid
 
             logger.debug(f"Making request to: {api_url}")
             response = requests.get(api_url, headers=headers, timeout=30)

@@ -119,6 +119,21 @@
                             ]
                         },
                         {
+                            "field": "user_uid",
+                            "label": "User UID",
+                            "type": "text",
+                            "help": "eMASS User UID for authentication (optional, required by some eMASS deployments)",
+                            "required": false,
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 100,
+                                    "errorMsg": "User UID must be between 1 and 100 characters"
+                                }
+                            ]
+                        },
+                        {
                             "field": "index",
                             "label": "Default Index",
                             "type": "singleSelect",
