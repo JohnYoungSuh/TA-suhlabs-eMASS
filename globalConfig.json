@@ -223,7 +223,7 @@
                             "type": "singleSelect",
                             "help": "Select the Splunk index where POA&M data will be stored",
                             "required": true,
-                            "defaultValue": "default",
+                            "defaultValue": "main",
                             "options": {
                                 "endpointUrl": "data/indexes",
                                 "denyList": "^_.*$",
