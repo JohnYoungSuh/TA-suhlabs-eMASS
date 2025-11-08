@@ -4,7 +4,7 @@
         "restRoot": "TA_securepro_eMASS",
         "displayName": "SecurePro eMASS Technology Add-on",
         "version": "1.0.0",
-        "schemaVersion": "0.0.10"
+        "schemaVersion": "0.0.8"
     },
     "pages": {
         "configuration": {
@@ -194,7 +194,6 @@
                         ],
                         "actions": [
                             "edit",
-                            "enable",
                             "delete",
                             "clone"
                         ]
@@ -236,14 +235,7 @@
                             "type": "text",
                             "help": "Collection interval in seconds (e.g., 300 for 5 minutes)",
                             "required": true,
-                            "defaultValue": "300",
-                            "validators": [
-                                {
-                                    "type": "regex",
-                                    "pattern": "^\\-[1-9]\\d*$|^\\d+$",
-                                    "errorMsg": "Interval must be a positive integer or -1"
-                                }
-                            ]
+                            "defaultValue": "300"
                         },
                         {
                             "field": "index",
