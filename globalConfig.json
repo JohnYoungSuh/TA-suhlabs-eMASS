@@ -146,6 +146,84 @@
                     "label": "Log Level"
                 }
             ]
+        },
+        "inputs": {
+            "title": "Inputs",
+            "description": "Configure eMASS POA&M data collection inputs",
+            "services": [
+                {
+                    "name": "emass_poam",
+                    "title": "eMASS POA&M Collection",
+                    "entity": [
+                        {
+                            "field": "name",
+                            "label": "Input Name",
+                            "type": "text",
+                            "help": "Enter a unique name for this data input",
+                            "required": true,
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 100,
+                                    "errorMsg": "Input name must be between 1 and 100 characters"
+                                },
+                                {
+                                    "type": "regex",
+                                    "pattern": "^[a-zA-Z]\\w*$",
+                                    "errorMsg": "Input name must start with a letter and contain only alphanumeric characters and underscores"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "account",
+                            "label": "eMASS Account",
+                            "type": "singleSelect",
+                            "help": "Select the eMASS account to use for data collection",
+                            "required": true,
+                            "options": {
+                                "referenceName": "account"
+                            }
+                        },
+                        {
+                            "field": "interval",
+                            "label": "Interval",
+                            "type": "text",
+                            "help": "Collection interval in seconds (e.g., 300 for 5 minutes)",
+                            "required": true,
+                            "defaultValue": "300",
+                            "validators": [
+                                {
+                                    "type": "regex",
+                                    "pattern": "^\\-[1-9]\\d*$|^\\d+$",
+                                    "errorMsg": "Interval must be a positive integer or -1"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "index",
+                            "label": "Index",
+                            "type": "singleSelect",
+                            "help": "Select the Splunk index where POA&M data will be stored",
+                            "required": true,
+                            "defaultValue": "default",
+                            "options": {
+                                "endpointUrl": "data/indexes",
+                                "denyList": "^_.*$",
+                                "createSearchChoice": true
+                            },
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 80,
+                                    "errorMsg": "Index name must be between 1 and 80 characters"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
         }
     }
 }
