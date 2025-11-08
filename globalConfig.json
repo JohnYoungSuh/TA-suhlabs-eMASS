@@ -169,6 +169,36 @@
                 {
                     "name": "emass_poam",
                     "title": "eMASS POA&M Collection",
+                    "table": {
+                        "header": [
+                            {
+                                "field": "name",
+                                "label": "Name"
+                            },
+                            {
+                                "field": "account",
+                                "label": "Account"
+                            },
+                            {
+                                "field": "interval",
+                                "label": "Interval"
+                            },
+                            {
+                                "field": "index",
+                                "label": "Index"
+                            },
+                            {
+                                "field": "disabled",
+                                "label": "Status"
+                            }
+                        ],
+                        "actions": [
+                            "edit",
+                            "enable",
+                            "delete",
+                            "clone"
+                        ]
+                    },
                     "entity": [
                         {
                             "field": "name",
