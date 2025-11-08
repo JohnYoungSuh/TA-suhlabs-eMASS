@@ -23,10 +23,11 @@ fi
 
 # Check if add-on is built
 if [ ! -d "../output/TA-securepro-eMASS" ]; then
-    echo -e "${YELLOW}⚠️  Add-on not built. Building now...${NC}"
-    cd ..
-    make build
-    cd demo
+    echo -e "${RED}❌ Add-on not built. Please build it first:${NC}"
+    echo "  cd .."
+    echo "  make build"
+    echo "  cd demo"
+    exit 1
 fi
 
 # Activate virtual environment
@@ -65,10 +66,7 @@ else
     DOCKER_COMPOSE="docker compose"
 fi
 
-# Stop any existing containers
-$DOCKER_COMPOSE down -v 2>/dev/null || true
-
-# Start Splunk
+# Start Splunk (don't destroy existing container, just ensure it's running)
 $DOCKER_COMPOSE up -d
 
 echo -e "${YELLOW}Waiting for Splunk to be ready (this may take 2-3 minutes)...${NC}"
