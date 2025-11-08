@@ -194,22 +194,11 @@
                             "field": "account",
                             "label": "eMASS Account",
                             "type": "singleSelect",
-                            "help": "Select the eMASS account to use for data collection",
+                            "help": "Select the eMASS account to use for data collection. The account's default index will be used if configured.",
                             "required": true,
                             "options": {
                                 "referenceName": "account"
-                            },
-                            "modifyFieldsOnValue": [
-                                {
-                                    "fieldValue": "[[any_other_value]]",
-                                    "fieldsToModify": [
-                                        {
-                                            "fieldId": "index",
-                                            "value": "{{account.index}}"
-                                        }
-                                    ]
-                                }
-                            ]
+                            }
                         },
                         {
                             "field": "interval",
@@ -232,7 +221,7 @@
                             "field": "index",
                             "label": "Index",
                             "type": "singleSelect",
-                            "help": "Select the Splunk index where POA&M data will be stored",
+                            "help": "Select the Splunk index where POA&M data will be stored. If the selected account has a default index configured, it will be used automatically. You can override it by selecting a different index here.",
                             "required": true,
                             "defaultValue": "main",
                             "options": {
