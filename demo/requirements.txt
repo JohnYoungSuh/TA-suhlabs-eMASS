@@ -2,3 +2,4 @@ selenium==4.15.2
 flask==3.0.0
 opencv-python==4.8.1.78
 pillow==10.1.0
+numpy<2.0.0
