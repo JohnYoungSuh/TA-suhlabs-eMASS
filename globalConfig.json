@@ -4,7 +4,7 @@
         "restRoot": "TA_securepro_eMASS",
         "displayName": "SecurePro eMASS Technology Add-on",
         "version": "1.0.0",
-        "schemaVersion": "0.0.9"
+        "schemaVersion": "0.0.10"
     },
     "pages": {
         "configuration": {
