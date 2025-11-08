@@ -18,7 +18,8 @@ SPLUNK_PASSWORD = "Password123!"
 DEMO_ACCOUNT_NAME = "emass_demo"
 SYSTEM_ID = "55090"
 BASE_URL = "http://host.docker.internal:4010"  # Mock API inside Docker
-API_KEY = "demo-api-key-12345"
+API_KEY = "f32516cc-57d3-43f5-9e16-8f86780a4cce"
+USER_UID = "1647389405"
 VIDEO_PATH = "./demo_output/emass_demo.webm"
 SLOW_MO = 1000  # Slow down actions by 1 second for visibility
 
@@ -202,6 +203,15 @@ async def create_demo(headless=False):
             except Exception as e:
                 print(f"   ❌ Could not enter API key: {e}")
                 await take_screenshot(page, "08_api_key_error")
+                raise
+
+            print("   - Entering User UID...")
+            try:
+                await wait_and_type(page, 'input[name="user_uid"]', USER_UID, delay=100, timeout=60000)
+                await asyncio.sleep(1)
+            except Exception as e:
+                print(f"   ❌ Could not enter user UID: {e}")
+                await take_screenshot(page, "08_user_uid_error")
                 raise
 
             # Select index
