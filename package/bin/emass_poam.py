@@ -63,14 +63,8 @@ class EMASS_POAM(smi.Script):
                 required_on_create=True,
             )
         )
-        scheme.add_argument(
-            smi.Argument(
-                'index',
-                title='Index',
-                description='Splunk index for storing data',
-                required_on_create=False,
-            )
-        )
+        # Note: 'index' is NOT defined here - Splunk provides it automatically
+        # Defining it causes: "Endpoint argument 'index' is an internal argument"
         return scheme
 
     def validate_input(self, definition: smi.ValidationDefinition):
