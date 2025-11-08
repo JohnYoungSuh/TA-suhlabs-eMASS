@@ -198,7 +198,18 @@
                             "required": true,
                             "options": {
                                 "referenceName": "account"
-                            }
+                            },
+                            "modifyFieldsOnValue": [
+                                {
+                                    "fieldValue": "[[any_other_value]]",
+                                    "fieldsToModify": [
+                                        {
+                                            "fieldId": "index",
+                                            "value": "{{account.index}}"
+                                        }
+                                    ]
+                                }
+                            ]
                         },
                         {
                             "field": "interval",
