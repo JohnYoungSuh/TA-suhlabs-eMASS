@@ -39,14 +39,8 @@ class EMASS_POAM(smi.Script):
         scheme.streaming_mode_xml = True
         scheme.use_single_instance = False
 
-        scheme.add_argument(
-            smi.Argument(
-                'name',
-                title='Input Name',
-                description='Unique name for this data input',
-                required_on_create=True
-            )
-        )
+        # Only define custom arguments here
+        # Splunk provides these automatically: name, interval, index, sourcetype, etc.
         scheme.add_argument(
             smi.Argument(
                 'account',
@@ -55,16 +49,6 @@ class EMASS_POAM(smi.Script):
                 required_on_create=True,
             )
         )
-        scheme.add_argument(
-            smi.Argument(
-                'interval',
-                title='Interval',
-                description='Collection interval in seconds',
-                required_on_create=True,
-            )
-        )
-        # Note: 'index' is NOT defined here - Splunk provides it automatically
-        # Defining it causes: "Endpoint argument 'index' is an internal argument"
         return scheme
 
     def validate_input(self, definition: smi.ValidationDefinition):
