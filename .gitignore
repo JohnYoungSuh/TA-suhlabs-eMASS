@@ -1,5 +1,6 @@
 output/
 .venv/
+venv/
 __pycache__/
 *.pyc
 .DS_Store
@@ -8,3 +9,8 @@ __pycache__/
 *.log
 package/local/
 SECURITY_CLEARANCE.md
+
+# IDE-specific folders
+.vscode/
+.claude/
+.idea/
