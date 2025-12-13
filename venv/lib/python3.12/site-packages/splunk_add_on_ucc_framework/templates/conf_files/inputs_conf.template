@@ -1,0 +1,7 @@
+{% for input_name in input_names %}
+{{ "[" ~ input_name ~ "]"}}
+python.version = python3
+{% for item, value in default_values.get(input_name, {}).items() %}
+{{item}} = {{value}}
+{% endfor %}
+{% endfor %}

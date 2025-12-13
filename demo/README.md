@@ -1,6 +1,6 @@
-# TA-securepro-eMASS Demo Video Creator
+# TA-suhlabs-eMASS Demo Video Creator
 
-Automated demo video creation for the TA-securepro-eMASS Splunk add-on. Creates professional demonstration videos **without watermarks** showing the configuration and data collection capabilities.
+Automated demo video creation for the TA-suhlabs-eMASS Splunk add-on. Creates professional demonstration videos **without watermarks** showing the configuration and data collection capabilities.
 
 ## Features
 
@@ -15,7 +15,7 @@ Automated demo video creation for the TA-securepro-eMASS Splunk add-on. Creates 
 The automated demo video demonstrates:
 
 1. **Login to Splunk** - Authenticates to Splunk Web UI
-2. **Navigate to Add-on Configuration** - Opens TA-securepro-eMASS configuration page
+2. **Navigate to Add-on Configuration** - Opens TA-suhlabs-eMASS configuration page
 3. **Configure Account** - Sets up eMASS account with:
    - Account name
    - **System ID: 55090** (clearly visible)
@@ -72,7 +72,7 @@ cd demo
 
 This will:
 1. Start Mock eMASS API server
-2. Start Splunk with TA-securepro-eMASS installed
+2. Start Splunk with TA-suhlabs-eMASS installed
 3. Wait for services to be ready
 4. Run automated browser script to create video
 5. Save video to `demo_output/emass_demo.webm`
@@ -121,7 +121,7 @@ ffmpeg -i demo_output/emass_demo.webm -c:v libx264 -crf 23 -c:a aac demo_output/
                │    - Port 4010
                │
                └──> Splunk 9.2.1 (Docker)
-                    - TA-securepro-eMASS installed
+                    - TA-suhlabs-eMASS installed
                     - Port 8000 (Web UI)
                     - Port 8089 (Management API)
 ```
@@ -319,7 +319,7 @@ For issues:
 
 ## License
 
-Same as parent project (TA-securepro-eMASS).
+Same as parent project (TA-suhlabs-eMASS).
 
 ---
 

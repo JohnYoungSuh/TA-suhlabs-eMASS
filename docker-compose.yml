@@ -1,11 +1,10 @@
-version: "3.7"
 services:
   splunk:
     build:
       context: .
       dockerfile: Dockerfile-splunk-local
       args:
-        SPLUNK_APP_PACKAGE: output/TA-securepro-eMASS
+        SPLUNK_APP_PACKAGE: output/TA-suhlabs-eMASS
         SPLUNK_VERSION: 9.2.1
     container_name: splunk-emass
     ports:
@@ -18,7 +17,7 @@ services:
     networks:
       - emass-net
     volumes:
-      - ./output/TA-securepro-eMASS:/opt/splunk/etc/apps/TA-securepro-eMASS
+      - ./output/TA-suhlabs-eMASS:/opt/splunk/etc/apps/TA-suhlabs-eMASS
 networks:
   emass-net:
     external: true

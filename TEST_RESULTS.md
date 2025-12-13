@@ -1,4 +1,4 @@
-# TA-securepro-eMASS Test Results
+# TA-suhlabs-eMASS Test Results
 
 **Date:** 2025-11-01
 **Status:** ✅ ALL TESTS PASSING
@@ -73,7 +73,7 @@
 |------|--------|
 | package/globalConfig.json | ✅ |
 | package/app.manifest | ✅ |
-| package/bin/ta_securepro_emass_rh_account.py | ✅ |
+| package/bin/ta_suhlabs_emass_rh_account.py | ✅ |
 | package/bin/import_declare_test.py | ✅ |
 | package/default/restmap.conf | ✅ |
 | package/lib/requirements.txt | ✅ |
@@ -85,7 +85,7 @@
 |-------|--------|
 | No invalid 'handlertype' keys | ✅ PASS |
 | REST handler configured | ✅ PASS |
-| Handler file: ta_securepro_emass_rh_account.py | ✅ |
+| Handler file: ta_suhlabs_emass_rh_account.py | ✅ |
 
 ### globalConfig.json Structure
 
@@ -166,7 +166,7 @@ usePlatform.CFP4tBzQ.js
 |-------|----------|--------|--------|
 | handlertype keys | 0 | 0 | ✅ |
 | handlerpersistentmode keys | 0 | 0 | ✅ |
-| Valid handlerfile | ta_securepro_emass_rh_account.py | Correct | ✅ |
+| Valid handlerfile | ta_suhlabs_emass_rh_account.py | Correct | ✅ |
 
 **Impact:** No more VSCode validation errors, REST endpoints will work correctly.
 
@@ -213,7 +213,7 @@ usePlatform.CFP4tBzQ.js
 6. ✅ Check for recursive output directories
 7. ✅ Report success with file size
 
-**Result:** Generates 262 files (18M) in `output/TA-securepro-eMASS/`
+**Result:** Generates 262 files (18M) in `output/TA-suhlabs-eMASS/`
 
 ### Validate Target Details
 
@@ -293,10 +293,10 @@ usePlatform.CFP4tBzQ.js
 
 ```bash
 # Copy to Splunk apps directory
-cp -r output/TA-securepro-eMASS $SPLUNK_HOME/etc/apps/
+cp -r output/TA-suhlabs-eMASS $SPLUNK_HOME/etc/apps/
 
 # Set permissions
-chown -R splunk:splunk $SPLUNK_HOME/etc/apps/TA-securepro-eMASS
+chown -R splunk:splunk $SPLUNK_HOME/etc/apps/TA-suhlabs-eMASS
 
 # Restart Splunk
 $SPLUNK_HOME/bin/splunk restart
@@ -304,7 +304,7 @@ $SPLUNK_HOME/bin/splunk restart
 
 ### 2. Configure via Web UI
 
-1. Navigate to: **Apps → TA-securepro-eMASS → Configuration**
+1. Navigate to: **Apps → TA-suhlabs-eMASS → Configuration**
 2. Add Account:
    - Account Name: `emass_prod`
    - System ID: `55090`

@@ -1,8 +1,8 @@
 {
     "meta": {
-        "name": "TA-securepro-eMASS",
-        "restRoot": "TA_securepro_eMASS",
-        "displayName": "SecurePro eMASS Technology Add-on",
+        "name": "TA-suhlabs-eMASS",
+        "restRoot": "TA_suhlabs_eMASS",
+        "displayName": "SuhLabs eMASS Technology Add-on",
         "version": "1.0.0",
         "schemaVersion": "0.0.10"
     },
@@ -152,6 +152,90 @@
                                     "minLength": 1,
                                     "maxLength": 80,
                                     "errorMsg": "Index name must be between 1 and 80 characters"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "output",
+                    "title": "Output Settings",
+                    "table": {
+                        "header": [
+                            {
+                                "field": "name",
+                                "label": "Name"
+                            },
+                            {
+                                "field": "http_method",
+                                "label": "HTTP Method"
+                            },
+                            {
+                                "field": "endpoint",
+                                "label": "Endpoint"
+                            }
+                        ],
+                        "actions": [
+                            "edit",
+                            "delete",
+                            "clone"
+                        ]
+                    },
+                    "entity": [
+                        {
+                            "field": "name",
+                            "label": "Output Name",
+                            "type": "text",
+                            "help": "Enter a unique name for this output configuration",
+                            "required": true,
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 100,
+                                    "errorMsg": "Output name must be between 1 and 100 characters"
+                                },
+                                {
+                                    "type": "regex",
+                                    "pattern": "^[a-zA-Z]\\w*$",
+                                    "errorMsg": "Output name must start with a letter and contain only alphanumeric characters and underscores"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "http_method",
+                            "label": "HTTP Method",
+                            "type": "singleSelect",
+                            "help": "Select HTTP method for POAM updates",
+                            "required": true,
+                            "defaultValue": "POST",
+                            "options": {
+                                "disableSearch": true,
+                                "autoCompleteFields": [
+                                    {
+                                        "label": "POST - Create new POAM",
+                                        "value": "POST"
+                                    },
+                                    {
+                                        "label": "PUT - Update existing POAM",
+                                        "value": "PUT"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "field": "endpoint",
+                            "label": "API Endpoint",
+                            "type": "text",
+                            "help": "eMASS API endpoint path (e.g., /api/systems/{system_id}/poams)",
+                            "required": true,
+                            "defaultValue": "/api/systems/{system_id}/poams",
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 500,
+                                    "errorMsg": "Endpoint must be between 1 and 500 characters"
                                 }
                             ]
                         }

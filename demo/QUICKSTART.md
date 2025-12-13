@@ -1,6 +1,6 @@
 # Quick Start: Create Demo Video in 5 Minutes
 
-This guide will help you create a professional demo video of TA-securepro-eMASS without any watermarks.
+This guide will help you create a professional demo video of TA-suhlabs-eMASS without any watermarks.
 
 ## Step 1: Setup (One-time, ~2 minutes)
 

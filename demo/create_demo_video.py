@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Automated Demo Video Creator for TA-securepro-eMASS
+Automated Demo Video Creator for TA-suhlabs-eMASS
 Creates a professional demo video without watermarks showing:
 1. Splunk UI configuration for systemId
 2. Data collection and visualization
@@ -110,11 +110,11 @@ async def create_demo(headless=False):
             await page.wait_for_load_state("networkidle")
             await asyncio.sleep(2)
 
-            # ===== SCENE 2: Navigate to TA-securepro-eMASS Configuration =====
+            # ===== SCENE 2: Navigate to TA-suhlabs-eMASS Configuration =====
             print("🔧 Scene 2: Navigating to add-on configuration...")
 
             # Go to Apps menu
-            await page.goto(f"{SPLUNK_URL}/en-US/app/TA-securepro-eMASS/configuration", timeout=60000)
+            await page.goto(f"{SPLUNK_URL}/en-US/app/TA-suhlabs-eMASS/configuration", timeout=60000)
             await page.wait_for_load_state("networkidle", timeout=60000)
             await asyncio.sleep(5)  # Extra wait for UCC to load
             await take_screenshot(page, "01_configuration_page")
@@ -391,13 +391,13 @@ async def create_demo(headless=False):
 async def main():
     """Main entry point"""
     print("=" * 60)
-    print("  TA-securepro-eMASS Automated Demo Video Creator")
+    print("  TA-suhlabs-eMASS Automated Demo Video Creator")
     print("=" * 60)
     print()
     print("Prerequisites:")
     print("  ✓ Splunk running on http://localhost:8000")
     print("  ✓ Mock eMASS API running on http://localhost:4010")
-    print("  ✓ TA-securepro-eMASS installed in Splunk")
+    print("  ✓ TA-suhlabs-eMASS installed in Splunk")
     print()
     print("This will create a professional demo video showing:")
     print("  1. Splunk UI configuration")

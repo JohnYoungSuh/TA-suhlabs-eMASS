@@ -1,7 +1,7 @@
 import os
 import sys
 
-ta_name = 'TA-securepro-eMASS'
+ta_name = 'TA-suhlabs-eMASS'
 ta_lib_name = 'lib'
 pattern_list = [ta_name, ta_lib_name]
 

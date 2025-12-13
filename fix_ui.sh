@@ -12,7 +12,7 @@ set -e
 echo "Copying UCC UI files to output..."
 
 UCC_UI_SOURCE=".venv/lib/python3.12/site-packages/splunk_add_on_ucc_framework/package/appserver"
-OUTPUT_DIR="output/TA-securepro-eMASS"
+OUTPUT_DIR="output/TA-suhlabs-eMASS"
 
 if [ ! -d "$UCC_UI_SOURCE" ]; then
     echo "ERROR: UCC UI source not found at $UCC_UI_SOURCE"

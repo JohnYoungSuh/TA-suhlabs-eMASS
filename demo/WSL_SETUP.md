@@ -39,7 +39,7 @@ Both commands should work without errors.
 ### 1. Install System Dependencies in WSL
 
 ```bash
-cd /home/suhlabs/projects/securepro/TA-securepro-eMASS/demo
+cd /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS/demo
 
 # Install required packages
 sudo apt-get update
@@ -74,7 +74,7 @@ sudo apt-get install -y \
 ### 2. Setup Demo Environment
 
 ```bash
-cd /home/suhlabs/projects/securepro/TA-securepro-eMASS/demo
+cd /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS/demo
 
 # Run setup script
 ./setup_demo.sh
@@ -89,7 +89,7 @@ playwright install chromium
 ### 3. Build the Add-on
 
 ```bash
-cd /home/suhlabs/projects/securepro/TA-securepro-eMASS
+cd /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS
 make build
 cd demo
 ```
@@ -99,7 +99,7 @@ cd demo
 ### Option 1: Use the Simplified WSL Script
 
 ```bash
-cd /home/suhlabs/projects/securepro/TA-securepro-eMASS/demo
+cd /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS/demo
 ./run_demo_wsl.sh
 ```
 
@@ -111,7 +111,7 @@ This script automatically:
 ### Option 2: Manual Steps
 
 ```bash
-cd /home/suhlabs/projects/securepro/TA-securepro-eMASS/demo
+cd /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS/demo
 
 # Activate venv
 source venv/bin/activate
@@ -157,12 +157,12 @@ python create_demo_video.py --headless
 
 Your demo video will be saved in WSL:
 ```
-/home/suhlabs/projects/securepro/TA-securepro-eMASS/demo/demo_output/emass_demo.webm
+/home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS/demo/demo_output/emass_demo.webm
 ```
 
 To access from Windows Explorer:
 ```
-\\wsl$\Ubuntu\home\suhlabs\projects\securepro\TA-securepro-eMASS\demo\demo_output\emass_demo.webm
+\\wsl$\Ubuntu\home\suhlabs\projects\suhlabs\TA-suhlabs-eMASS\demo\demo_output\emass_demo.webm
 ```
 
 Or copy to Windows:
@@ -228,7 +228,7 @@ After creating the video, convert to MP4 for better compatibility with PowerPoin
 
 ```bash
 # In WSL
-cd /home/suhlabs/projects/securepro/TA-securepro-eMASS/demo
+cd /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS/demo
 
 # Install ffmpeg if not installed
 sudo apt-get install ffmpeg
@@ -244,7 +244,7 @@ cp demo_output/emass_demo.mp4 /mnt/c/Users/YourUsername/Downloads/
 
 ```bash
 # Setup (one time)
-cd /home/suhlabs/projects/securepro/TA-securepro-eMASS/demo
+cd /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS/demo
 ./setup_demo.sh
 source venv/bin/activate
 playwright install chromium

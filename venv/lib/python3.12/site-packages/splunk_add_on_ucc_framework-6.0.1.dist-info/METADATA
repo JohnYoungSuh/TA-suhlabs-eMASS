@@ -1,0 +1,65 @@
+Metadata-Version: 2.4
+Name: splunk_add_on_ucc_framework
+Version: 6.0.1
+Summary: Splunk Add-on SDK formerly UCC is a build and code generation framework
+License: Apache-2.0
+License-File: LICENSE
+License-File: NOTICE
+Keywords: splunk,ucc
+Author: Splunk
+Author-email: addonfactory@splunk.com
+Requires-Python: >=3.9,<3.14
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Topic :: Software Development :: Code Generators
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Provides-Extra: validate
+Requires-Dist: PyYAML (>=6.0,<7.0)
+Requires-Dist: addonfactory-splunk-conf-parser-lib (>=0.4.3,<0.5.0)
+Requires-Dist: certifi (>=2025.6.15,<2026.0.0)
+Requires-Dist: colorama (>=0.4.6,<0.5.0)
+Requires-Dist: defusedxml (>=0.7.1,<0.8.0)
+Requires-Dist: dunamai (>=1.22.0,<2.0.0)
+Requires-Dist: jinja2 (>=3.1.6,<4)
+Requires-Dist: jsonschema (>=4.25.0,<5.0.0)
+Requires-Dist: packaging (>=25.0)
+Requires-Dist: splunk-appinspect[validate] (>=3.10.3,<4.0.0) ; extra == "validate"
+Project-URL: Bug Tracker, https://github.com/splunk/addonfactory-ucc-generator/issues
+Project-URL: Documentation, https://splunk.github.io/addonfactory-ucc-generator
+Project-URL: Homepage, https://github.com/splunk/addonfactory-ucc-generator
+Project-URL: Repository, https://github.com/splunk/addonfactory-ucc-generator
+Description-Content-Type: text/markdown
+
+# UCC
+
+![PyPI](https://img.shields.io/pypi/v/splunk-add-on-ucc-framework)
+![Python](https://img.shields.io/pypi/pyversions/splunk-add-on-ucc-framework.svg)
+![PyPI monthly downloads](https://img.shields.io/pypi/dm/splunk-add-on-ucc-framework)
+
+## What is UCC?
+
+UCC stands for  Universal Configuration Console. It is a service for generating Splunk Add-ons which is easily customizable and flexible.
+UCC provides basic UI template for creating Addon's UI. It is helpful to control the activity by using hooks and other functionalities.
+
+## Usage
+
+For full usage instructions, please visit the [documentation](https://splunk.github.io/addonfactory-ucc-generator/).
+
+## Communication channels
+
+If you are a Splunker use: https://splunk.slack.com/archives/C03T8QCHBTJ
+
+If you are a part of the community use: https://splunk-usergroups.slack.com/archives/C03SG3ZL4S1
+
+## Contributing Guidelines
+
+Go to [contributing Guidelines in the repo](docs/contributing.md) or [published version](https://splunk.github.io/addonfactory-ucc-generator/contributing/).
+

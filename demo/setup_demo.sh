@@ -2,7 +2,7 @@
 set -e
 
 echo "========================================="
-echo "  TA-securepro-eMASS Demo Setup"
+echo "  TA-suhlabs-eMASS Demo Setup"
 echo "========================================="
 echo ""
 
@@ -71,7 +71,7 @@ echo -e "${GREEN}  Demo Setup Complete!${NC}"
 echo -e "${GREEN}=========================================${NC}"
 echo ""
 echo "Next steps:"
-echo "1. Build the TA-securepro-eMASS add-on:"
+echo "1. Build the TA-suhlabs-eMASS add-on:"
 echo "   cd .."
 echo "   make build"
 echo ""

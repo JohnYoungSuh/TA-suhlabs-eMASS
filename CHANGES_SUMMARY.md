@@ -1,4 +1,4 @@
-# TA-securepro-eMASS Build Fix Summary
+# TA-suhlabs-eMASS Build Fix Summary
 
 **Date:** 2025-11-01
 **UCC Version:** 6.0.1
@@ -41,7 +41,7 @@ Created workaround script `fix_ui.sh`:
 #!/bin/bash
 # Copies pre-built UI files from UCC package to output
 cp -r .venv/lib/python3.12/site-packages/splunk_add_on_ucc_framework/package/appserver \
-      output/TA-securepro-eMASS/
+      output/TA-suhlabs-eMASS/
 ```
 
 **Makefile Integration:**
@@ -49,7 +49,7 @@ Added `@./fix_ui.sh` to build target (line 42)
 
 **Verification:**
 ```bash
-find output/TA-securepro-eMASS/appserver -name "*.js" | wc -l
+find output/TA-suhlabs-eMASS/appserver -name "*.js" | wc -l
 # Expected: 22 JavaScript files
 ```
 
@@ -70,12 +70,12 @@ Cleaned up `package/default/restmap.conf`:
 
 **Final Valid Configuration:**
 ```conf
-[admin:TA_securepro_eMASS]
+[admin:TA_suhlabs_eMASS]
 match = /
-members = ta_securepro_emass_account
+members = ta_suhlabs_emass_account
 
-[admin_external:ta_securepro_emass_account]
-handlerfile = ta_securepro_emass_rh_account.py
+[admin_external:ta_suhlabs_emass_account]
+handlerfile = ta_suhlabs_emass_rh_account.py
 handleractions = edit, list, remove, create
 ```
 
@@ -97,7 +97,7 @@ Migrated to Salesforce-style account-based pattern:
 - Configures collection: `interval`, `index`
 
 **REST Handler:**
-Created `package/bin/ta_securepro_emass_rh_account.py` using `MultipleModel` pattern for account CRUD operations.
+Created `package/bin/ta_suhlabs_emass_rh_account.py` using `MultipleModel` pattern for account CRUD operations.
 
 ---
 
@@ -109,7 +109,7 @@ Created `package/bin/ta_securepro_emass_rh_account.py` using `MultipleModel` pat
 - **Permissions:** Executable (`chmod +x`)
 - **Called by:** Makefile build target
 
-### 2. `package/bin/ta_securepro_emass_rh_account.py` (NEW)
+### 2. `package/bin/ta_suhlabs_emass_rh_account.py` (NEW)
 - **Purpose:** REST handler for account management
 - **Pattern:** MultipleModel (supports multiple account instances)
 - **Fields:** system_id (Pattern validation), base_url (String), api_key (Encrypted)
@@ -174,10 +174,10 @@ Created `package/bin/ta_securepro_emass_rh_account.py` using `MultipleModel` pat
 ### 3. Entire `/default/` directory in root (DELETED)
 - **Reason:** Configuration should only be in `package/default/`
 
-### 4. `package/bin/ta_securepro_emass_rh_settings.py` (DELETED)
+### 4. `package/bin/ta_suhlabs_emass_rh_settings.py` (DELETED)
 - **Reason:** Old REST handler from previous architecture
 
-### 5. `package/bin/ta_securepro_emass_rh_emass_poam_input.py` (DELETED)
+### 5. `package/bin/ta_suhlabs_emass_rh_emass_poam_input.py` (DELETED)
 - **Reason:** Old REST handler from previous architecture
 
 ### 6. `package/default/app.conf` (DELETED)
@@ -209,7 +209,7 @@ make build
 
 ### Output Structure Verification
 ```bash
-output/TA-securepro-eMASS/
+output/TA-suhlabs-eMASS/
 ├── appserver/
 │   └── static/
 │       └── js/
@@ -217,7 +217,7 @@ output/TA-securepro-eMASS/
 │               ├── *.js (22 files)          ✅ Fixed by fix_ui.sh
 │               └── globalConfig.json        ✅ Always generated
 ├── bin/
-│   ├── ta_securepro_emass_rh_account.py    ✅ Account REST handler
+│   ├── ta_suhlabs_emass_rh_account.py    ✅ Account REST handler
 │   └── import_declare_test.py              ✅ Path setup
 ├── default/
 │   ├── app.conf                             ✅ UCC auto-generated
@@ -266,14 +266,14 @@ output/TA-securepro-eMASS/
 ### 1. Deploy to Splunk
 ```bash
 # Copy to Splunk apps directory
-cp -r output/TA-securepro-eMASS $SPLUNK_HOME/etc/apps/
+cp -r output/TA-suhlabs-eMASS $SPLUNK_HOME/etc/apps/
 
 # Restart Splunk
 $SPLUNK_HOME/bin/splunk restart
 ```
 
 ### 2. Configure in Splunk Web
-1. Navigate to: Apps → TA-securepro-eMASS → Configuration
+1. Navigate to: Apps → TA-suhlabs-eMASS → Configuration
 2. Add Account:
    - Account Name: `emass_prod`
    - System ID: `55090`

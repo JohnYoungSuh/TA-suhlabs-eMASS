@@ -10,7 +10,7 @@ NC='\033[0m' # No Color
 
 echo ""
 echo -e "${BLUE}=========================================${NC}"
-echo -e "${BLUE}  TA-securepro-eMASS Demo Video Creator${NC}"
+echo -e "${BLUE}  TA-suhlabs-eMASS Demo Video Creator${NC}"
 echo -e "${BLUE}=========================================${NC}"
 echo ""
 
@@ -21,7 +21,7 @@ if [ ! -d "venv" ]; then
 fi
 
 # Check if add-on is built
-if [ ! -d "../output/TA-securepro-eMASS" ]; then
+if [ ! -d "../output/TA-suhlabs-eMASS" ]; then
     echo -e "${YELLOW}⚠️  Add-on not built. Building now...${NC}"
     cd ..
     make build
@@ -53,7 +53,7 @@ for i in {1..10}; do
 done
 
 echo ""
-echo -e "${YELLOW}Step 2: Starting Splunk with TA-securepro-eMASS...${NC}"
+echo -e "${YELLOW}Step 2: Starting Splunk with TA-suhlabs-eMASS...${NC}"
 # Use docker-compose from parent directory
 cd ..
 

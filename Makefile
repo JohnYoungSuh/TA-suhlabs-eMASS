@@ -38,30 +38,30 @@ build: lint
 	@echo '{"step":"build","ts":"'$$(date -Iseconds)'"}'
 	@rm -rf $(OUT_DIR)
 	@source $(VENV)/bin/activate && ucc-gen build --source $(PKG_DIR) --ta-version 1.0.0
-	@test -d $(OUT_DIR)/TA-securepro-eMASS || (echo '{"error":"build failed"}' && exit 1)
+	@test -d $(OUT_DIR)/TA-suhlabs-eMASS || (echo '{"error":"build failed"}' && exit 1)
 	@./fix_ui.sh
-	@rm -f $(OUT_DIR)/TA-securepro-eMASS/appserver/static/openapi.json
+	@rm -f $(OUT_DIR)/TA-suhlabs-eMASS/appserver/static/openapi.json
 	@find $(OUT_DIR) -name "output" -type d && (echo '{"error":"recursive output detected"}' && exit 1) || true
 	@echo '{"status":"ok","size":'$$(du -sb $(OUT_DIR) | cut -f1)'}'
 
 .PHONY: validate
 validate:
 	@echo '{"step":"validate","ts":"'$$(date -Iseconds)'"}'
-	@test -f $(OUT_DIR)/TA-securepro-eMASS/default/app.conf || (echo '{"error":"app.conf missing"}' && exit 1)
-	@test -f $(OUT_DIR)/TA-securepro-eMASS/default/restmap.conf || (echo '{"error":"restmap.conf missing"}' && exit 1)
-	@test -d $(OUT_DIR)/TA-securepro-eMASS/bin || (echo '{"error":"bin directory missing"}' && exit 1)
-	@test -d $(OUT_DIR)/TA-securepro-eMASS/lib/splunktaucclib || (echo '{"error":"splunktaucclib missing"}' && exit 1)
-	@test -d $(OUT_DIR)/TA-securepro-eMASS/appserver/static/js/build || (echo '{"error":"UI files missing"}' && exit 1)
-	@grep -q "version = 1.0.0" $(OUT_DIR)/TA-securepro-eMASS/default/app.conf || (echo '{"error":"version mismatch"}' && exit 1)
-	@[ "$$(find $(OUT_DIR)/TA-securepro-eMASS/appserver/static/js/build -name '*.js' | wc -l)" -ge 20 ] || (echo '{"error":"insufficient UI files"}' && exit 1)
+	@test -f $(OUT_DIR)/TA-suhlabs-eMASS/default/app.conf || (echo '{"error":"app.conf missing"}' && exit 1)
+	@test -f $(OUT_DIR)/TA-suhlabs-eMASS/default/restmap.conf || (echo '{"error":"restmap.conf missing"}' && exit 1)
+	@test -d $(OUT_DIR)/TA-suhlabs-eMASS/bin || (echo '{"error":"bin directory missing"}' && exit 1)
+	@test -d $(OUT_DIR)/TA-suhlabs-eMASS/lib/splunktaucclib || (echo '{"error":"splunktaucclib missing"}' && exit 1)
+	@test -d $(OUT_DIR)/TA-suhlabs-eMASS/appserver/static/js/build || (echo '{"error":"UI files missing"}' && exit 1)
+	@grep -q "version = 1.0.0" $(OUT_DIR)/TA-suhlabs-eMASS/default/app.conf || (echo '{"error":"version mismatch"}' && exit 1)
+	@[ "$$(find $(OUT_DIR)/TA-suhlabs-eMASS/appserver/static/js/build -name '*.js' | wc -l)" -ge 20 ] || (echo '{"error":"insufficient UI files"}' && exit 1)
 	@echo '{"status":"ok","files":'$$(find $(OUT_DIR) -type f | wc -l)'}'
 
 .PHONY: image
 image: build validate
 	@echo '{"step":"image","ts":"'$$(date -Iseconds)'"}'
-	@docker build -f Dockerfile-splunk-local -t ta-securepro-emass:latest \
-		--build-arg SPLUNK_APP_PACKAGE=$(OUT_DIR)/TA-securepro-eMASS .
-	@echo '{"status":"ok","image":"ta-securepro-emass:latest"}'
+	@docker build -f Dockerfile-splunk-local -t ta-suhlabs-emass:latest \
+		--build-arg SPLUNK_APP_PACKAGE=$(OUT_DIR)/TA-suhlabs-eMASS .
+	@echo '{"status":"ok","image":"ta-suhlabs-emass:latest"}'
 
 .PHONY: test-unit
 test-unit:

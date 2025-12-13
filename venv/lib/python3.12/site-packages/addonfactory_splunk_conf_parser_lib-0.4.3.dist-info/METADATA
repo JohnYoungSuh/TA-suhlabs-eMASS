@@ -1,0 +1,39 @@
+Metadata-Version: 2.1
+Name: addonfactory-splunk-conf-parser-lib
+Version: 0.4.3
+Summary: Splunk .conf files parser
+Home-page: https://github.com/splunk/addonfactory-splunk-conf-parser-lib
+Keywords: splunk
+Author: Splunk
+Author-email: addonfactory@splunk.com
+Requires-Python: >=3.7,<4.0
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Project-URL: Repository, https://github.com/splunk/addonfactory-splunk-conf-parser-lib
+Description-Content-Type: text/markdown
+
+# addonfactory_splunk_conf_parser_lib
+
+This repository provides a one-file library to parse Splunk-specific `.conf` files.
+
+Currently, it supports:
+
+1. Read/write .conf files with comments
+2. Additional comment prefix such as *
+3. Support multiline end with \
+
+## Development
+
+This project uses `poetry 1.5.1`.
+

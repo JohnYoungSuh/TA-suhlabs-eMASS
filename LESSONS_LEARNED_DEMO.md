@@ -1,4 +1,4 @@
-# Lessons Learned: TA-securepro-eMASS Demo Video & Data Ingestion
+# Lessons Learned: TA-suhlabs-eMASS Demo Video & Data Ingestion
 
 **Session Date:** November 8, 2025
 **Branch:** `claude/emass-demo-video-011CUsZtcRkj8i1WEysgYprC`

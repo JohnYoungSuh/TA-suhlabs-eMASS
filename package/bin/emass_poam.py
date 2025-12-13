@@ -18,7 +18,7 @@ from solnlib.modular_input import checkpointer
 
 
 # Set up logging
-logger = log.Logs().get_logger("ta_securepro_emass_emass_poam")
+logger = log.Logs().get_logger("ta_suhlabs_emass_emass_poam")
 
 
 class EMASS_POAM(smi.Script):
@@ -64,6 +64,13 @@ class EMASS_POAM(smi.Script):
         # Get session key for accessing Splunk configs
         session_key = self._input_definition.metadata.get("session_key")
 
+        # Initialize checkpointer
+        ckpt = checkpointer.KVStoreCheckpointer(
+            "ta_suhlabs_emass_emass_poam",
+            session_key,
+            "TA-suhlabs-eMASS"
+        )
+
         for input_name, input_item in inputs.inputs.items():
             try:
                 logger.info(f"Starting collection for input: {input_name}")
@@ -72,6 +79,16 @@ class EMASS_POAM(smi.Script):
                 account_name = input_item.get("account")
                 interval = int(input_item.get("interval", 300))
                 index = input_item.get("index", "default")
+
+                # Get checkpoint for this input
+                checkpoint_key = f"{input_name}_last_collection"
+                last_collection_time = ckpt.get(checkpoint_key)
+                
+                if last_collection_time:
+                    logger.info(f"Last collection time: {last_collection_time}")
+                else:
+                    logger.info("First time collection - no checkpoint found")
+                    last_collection_time = None
 
                 # Get account configuration
                 account_config = self._get_account_config(session_key, account_name)
@@ -100,12 +117,13 @@ class EMASS_POAM(smi.Script):
                 logger.info(f"Constructed API URL: {api_url}")
 
                 # Collect data from API
-                poams = self._collect_poams(api_url, api_key, user_uid)
+                poams = self._collect_poams(api_url, api_key, user_uid, last_collection_time)
 
                 if poams:
                     logger.info(f"Collected {len(poams)} POA&Ms from {api_url}")
 
                     # Write events to Splunk
+                    events_written = 0
                     for poam in poams:
                         event = smi.Event(
                             data=json.dumps(poam),
@@ -114,8 +132,14 @@ class EMASS_POAM(smi.Script):
                             source=api_url,
                         )
                         ew.write_event(event)
+                        events_written += 1
+
+                    # Update checkpoint with current time
+                    current_time = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                    ckpt.update(checkpoint_key, current_time)
+                    logger.info(f"Checkpoint updated: {current_time}, events written: {events_written}")
                 else:
-                    logger.info(f"No POA&Ms found at {api_url}")
+                    logger.info(f"No new POA&Ms found at {api_url}")
 
             except Exception as e:
                 logger.error(f"Error processing input {input_name}: {str(e)}")
@@ -135,12 +159,12 @@ class EMASS_POAM(smi.Script):
         try:
             cfm = conf_manager.ConfManager(
                 session_key,
-                "TA-securepro-eMASS",
-                realm="__REST_CREDENTIAL__#TA-securepro-eMASS#configs/conf-ta_securepro_emass_account"
+                "TA-suhlabs-eMASS",
+                realm="__REST_CREDENTIAL__#TA-suhlabs-eMASS#configs/conf-ta_suhlabs_emass_account"
             )
 
             # Get the account configuration
-            account_conf = cfm.get_conf("ta_securepro_emass_account")
+            account_conf = cfm.get_conf("ta_suhlabs_emass_account")
             account_stanza = account_conf.get(account_name)
 
             if account_stanza:
@@ -158,7 +182,7 @@ class EMASS_POAM(smi.Script):
             logger.error(f"Error retrieving account config for '{account_name}': {str(e)}")
             return None
 
-    def _collect_poams(self, api_url: str, api_key: str, user_uid: str = None) -> list:
+    def _collect_poams(self, api_url: str, api_key: str, user_uid: str = None, last_collection_time: str = None) -> list:
         """
         Collect POA&Ms from eMASS API
 
@@ -166,6 +190,7 @@ class EMASS_POAM(smi.Script):
             api_url: Full API endpoint URL
             api_key: API key for authentication
             user_uid: User UID for authentication (optional)
+            last_collection_time: ISO timestamp of last collection (optional)
 
         Returns:
             List of POA&M dictionaries
@@ -180,27 +205,59 @@ class EMASS_POAM(smi.Script):
             if user_uid:
                 headers["user-uid"] = user_uid
 
+            # Add query parameter for filtering by last modified date
+            params = {}
+            if last_collection_time:
+                # eMASS API typically supports lastModifiedDate parameter
+                params["lastModifiedDate"] = last_collection_time
+                logger.debug(f"Filtering POAMs modified since: {last_collection_time}")
+
             logger.debug(f"Making request to: {api_url}")
-            response = requests.get(api_url, headers=headers, timeout=30)
+            response = requests.get(api_url, headers=headers, params=params, timeout=30)
 
             if response.status_code == 200:
                 data = response.json()
 
                 # Handle different response formats
                 if isinstance(data, list):
-                    return data
+                    poams = data
                 elif isinstance(data, dict):
                     # Check for common pagination/wrapper keys
                     if "poams" in data:
-                        return data["poams"]
+                        poams = data["poams"]
                     elif "data" in data:
-                        return data["data"]
+                        poams = data["data"]
                     elif "items" in data:
-                        return data["items"]
+                        poams = data["items"]
                     else:
                         # Return as single-item list if it's an object
-                        return [data]
-                return []
+                        poams = [data]
+                else:
+                    poams = []
+
+                # Additional filtering in case API doesn't support lastModifiedDate parameter
+                if last_collection_time and poams:
+                    filtered_poams = []
+                    for poam in poams:
+                        # Check various possible date fields
+                        poam_date = (
+                            poam.get("lastModifiedDate") or 
+                            poam.get("last_modified_date") or
+                            poam.get("updatedDate") or
+                            poam.get("updated_date") or
+                            poam.get("modifiedDate")
+                        )
+                        
+                        if poam_date and poam_date > last_collection_time:
+                            filtered_poams.append(poam)
+                        elif not poam_date:
+                            # Include POAMs without date field (safer to collect them)
+                            filtered_poams.append(poam)
+                    
+                    logger.info(f"Filtered {len(poams)} POAMs to {len(filtered_poams)} new/updated items")
+                    return filtered_poams
+                
+                return poams
             else:
                 logger.error(f"API request failed with status {response.status_code}: {response.text}")
                 return []

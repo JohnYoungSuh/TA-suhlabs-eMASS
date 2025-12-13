@@ -16,7 +16,7 @@ This guide helps you remove demo files and reverse changes made to your WSL envi
 **Keeps:** Demo scripts and documentation
 
 ```bash
-cd /home/suhlabs/projects/securepro/TA-securepro-eMASS/demo
+cd /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS/demo
 ./cleanup_demo.sh
 ```
 
@@ -37,7 +37,7 @@ This removes:
 **Removes:** Everything in the demo/ directory
 
 ```bash
-cd /home/suhlabs/projects/securepro/TA-securepro-eMASS
+cd /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS
 ./demo/cleanup_complete.sh
 ```
 
@@ -57,7 +57,7 @@ This removes:
 **Removes:** System libraries installed via apt-get
 
 ```bash
-cd /home/suhlabs/projects/securepro/TA-securepro-eMASS/demo
+cd /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS/demo
 ./cleanup_system_packages.sh
 ```
 
@@ -85,14 +85,14 @@ If you prefer to do it manually:
 pkill -f "mock_emass_api.py"
 
 # Stop Docker containers
-cd /home/suhlabs/projects/securepro/TA-securepro-eMASS
+cd /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS
 docker compose down -v
 ```
 
 ### 2. Remove Virtual Environment
 
 ```bash
-cd /home/suhlabs/projects/securepro/TA-securepro-eMASS/demo
+cd /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS/demo
 rm -rf venv/
 ```
 
@@ -118,7 +118,7 @@ find . -type f -name "*.pyc" -delete 2>/dev/null
 ### 6. Remove Demo Directory (Optional)
 
 ```bash
-cd /home/suhlabs/projects/securepro/TA-securepro-eMASS
+cd /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS
 rm -rf demo/
 ```
 
@@ -137,7 +137,7 @@ The demo files are in your Git repository. Even after removing files locally, th
 ### To Remove from Git (Delete from Branch)
 
 ```bash
-cd /home/suhlabs/projects/securepro/TA-securepro-eMASS
+cd /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS
 
 # Remove demo directory from Git
 git rm -rf demo/
@@ -162,7 +162,7 @@ For most users, we recommend:
 
 ```bash
 # 1. Clean runtime files (safe, reversible)
-cd /home/suhlabs/projects/securepro/TA-securepro-eMASS/demo
+cd /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS/demo
 ./cleanup_demo.sh
 
 # 2. If you never want the demo again
@@ -181,7 +181,7 @@ cd /home/suhlabs/projects/securepro/TA-securepro-eMASS/demo
 
 Some files might be owned by root (from Docker). Fix with:
 ```bash
-sudo chown -R $USER:$USER /home/suhlabs/projects/securepro/TA-securepro-eMASS/demo
+sudo chown -R $USER:$USER /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS/demo
 ```
 
 ### Docker containers won't stop
@@ -201,7 +201,7 @@ kill -9 <pid>
 ### Want to start fresh after cleanup
 
 ```bash
-cd /home/suhlabs/projects/securepro/TA-securepro-eMASS
+cd /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS
 git checkout demo/
 cd demo
 ./setup_demo.sh
@@ -235,7 +235,7 @@ These are all safe to leave - they don't take much space and might be useful for
 ./cleanup_system_packages.sh
 
 # Manual nuclear option
-cd /home/suhlabs/projects/securepro/TA-securepro-eMASS
+cd /home/suhlabs/projects/suhlabs/TA-suhlabs-eMASS
 docker compose down -v
 pkill -f "mock_emass_api.py"
 rm -rf demo/

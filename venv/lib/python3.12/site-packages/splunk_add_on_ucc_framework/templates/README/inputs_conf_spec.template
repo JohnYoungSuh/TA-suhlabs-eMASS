@@ -1,0 +1,4 @@
+{% for name, properties in input_stanzas.items() %}
+{{ "[" ~ name | join("") ~ "://<name>]" }}
+{{ properties | sort() | join("\n") }}
+{% endfor %}

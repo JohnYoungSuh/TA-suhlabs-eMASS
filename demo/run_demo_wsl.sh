@@ -10,7 +10,7 @@ NC='\033[0m' # No Color
 
 echo ""
 echo -e "${BLUE}=========================================${NC}"
-echo -e "${BLUE}  TA-securepro-eMASS Demo (WSL Mode)${NC}"
+echo -e "${BLUE}  TA-suhlabs-eMASS Demo (WSL Mode)${NC}"
 echo -e "${BLUE}=========================================${NC}"
 echo ""
 echo "Running in WSL with Docker Desktop..."
@@ -58,7 +58,7 @@ if [ ! -d "venv" ]; then
 fi
 
 # Check if add-on is built
-if [ ! -d "../output/TA-securepro-eMASS" ]; then
+if [ ! -d "../output/TA-suhlabs-eMASS" ]; then
     echo -e "${YELLOW}⚠️  Add-on not built. Building now...${NC}"
     cd ..
     make build
@@ -125,7 +125,7 @@ $DOCKER_COMPOSE up -d
 
 echo ""
 echo -e "${YELLOW}Waiting for Splunk to be ready (this takes 2-3 minutes)...${NC}"
-echo "Docker is starting Splunk 9.2.1 with TA-securepro-eMASS installed..."
+echo "Docker is starting Splunk 9.2.1 with TA-suhlabs-eMASS installed..."
 
 SPLUNK_READY=false
 for i in {1..60}; do

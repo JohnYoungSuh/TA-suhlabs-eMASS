@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Automated Demo Video Creator for TA-securepro-eMASS (Selenium version)
+Automated Demo Video Creator for TA-suhlabs-eMASS (Selenium version)
 Creates a professional demo video without watermarks showing:
 1. Splunk UI configuration for systemId
 2. Data collection and visualization
@@ -155,9 +155,9 @@ def create_demo(headless=False):
         submit_button.click()
         time.sleep(5)
 
-        # ===== SCENE 2: Navigate to TA-securepro-eMASS Configuration =====
+        # ===== SCENE 2: Navigate to TA-suhlabs-eMASS Configuration =====
         print("🔧 Scene 2: Navigating to add-on configuration...")
-        driver.get(f"{SPLUNK_URL}/en-US/app/TA-securepro-eMASS/configuration")
+        driver.get(f"{SPLUNK_URL}/en-US/app/TA-suhlabs-eMASS/configuration")
         time.sleep(5)
         take_screenshot(driver, "02_configuration_page")
 
@@ -222,7 +222,7 @@ def create_demo(headless=False):
 
         # ===== SCENE 4: Navigate to Inputs =====
         print("📥 Scene 4: Navigating to Inputs page...")
-        driver.get(f"{SPLUNK_URL}/en-US/app/TA-securepro-eMASS/inputs")
+        driver.get(f"{SPLUNK_URL}/en-US/app/TA-suhlabs-eMASS/inputs")
         time.sleep(5)
         take_screenshot(driver, "06_inputs_page")
 
@@ -326,14 +326,14 @@ def create_demo(headless=False):
 def main():
     """Main entry point"""
     print("=" * 60)
-    print("  TA-securepro-eMASS Automated Demo Video Creator")
+    print("  TA-suhlabs-eMASS Automated Demo Video Creator")
     print("  (Selenium version)")
     print("=" * 60)
     print()
     print("Prerequisites:")
     print("  ✓ Splunk running on http://localhost:8000")
     print("  ✓ Mock eMASS API running on http://localhost:4010")
-    print("  ✓ TA-securepro-eMASS installed in Splunk")
+    print("  ✓ TA-suhlabs-eMASS installed in Splunk")
     print("  ✓ Chrome/Chromium browser installed")
     print()
     print("This will create a professional demo video showing:")

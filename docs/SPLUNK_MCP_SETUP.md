@@ -1,6 +1,6 @@
 # Splunk MCP Setup Guide
 
-**Enable Splunk context in Claude Code for TA-securepro-eMASS development**
+**Enable Splunk context in Claude Code for TA-suhlabs-eMASS development**
 
 ---
 
@@ -128,7 +128,7 @@ Ask Claude: "Show Splunk data models"
 
 ---
 
-## Use Cases for TA-securepro-eMASS
+## Use Cases for TA-suhlabs-eMASS
 
 ### 1. Query eMASS POA&M Data
 
@@ -257,7 +257,7 @@ If you need custom Splunk integration for eMASS:
 
 ```bash
 # Create custom MCP server
-cd /home/suhlabs/projects/securepro
+cd /home/suhlabs/projects/suhlabs
 mkdir splunk-emass-mcp
 cd splunk-emass-mcp
 

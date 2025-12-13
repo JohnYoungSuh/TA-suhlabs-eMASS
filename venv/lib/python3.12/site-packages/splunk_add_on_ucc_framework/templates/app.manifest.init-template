@@ -1,0 +1,66 @@
+{
+    "schemaVersion": "2.0.0",
+    "info": {
+        "title": "{{addon_display_name}}",
+        "id": {
+            "group": null,
+            "name": "{{addon_name}}",
+            "version": "{{addon_version}}"
+        },
+        "author": [
+            {
+                {% if include_author -%}
+                "name": "{{include_author}}",
+                {%- else -%}
+                "name": "",
+                {%- endif %}
+                "email": null,
+                "company": null
+            }
+        ],
+        "releaseDate": null,
+        "description": "{{addon_display_name}}",
+        "classification": {
+            "intendedAudience": "IT Professionals",
+            "categories": [
+                "Security, Fraud & Compliance"
+            ],
+            "developmentStatus": "Production/Stable"
+        },
+        "commonInformationModels": null,
+        "license": {
+            {% if add_license -%}
+            "name": "{{add_license}}",
+            "text": "./LICENSES/{{add_license}}.txt",
+            {%- else -%}
+            "name": "LICENSE.txt",
+            "text": "./LICENSES/LICENSE.txt",
+            {%- endif %}
+            "uri": null
+        },
+        "privacyPolicy": {
+            "name": null,
+            "text": null,
+            "uri": null
+        },
+        "releaseNotes": {
+            "name": "README",
+            "text": "README.txt",
+            "uri": ""
+        }
+    },
+    "dependencies": null,
+    "tasks": null,
+    "inputGroups": null,
+    "incompatibleApps": null,
+    "platformRequirements": null,
+    "supportedDeployments": [
+        "_standalone",
+        "_distributed",
+        "_search_head_clustering"
+    ],
+    "targetWorkloads": [
+        "_search_heads",
+        "_indexers"
+    ]
+}

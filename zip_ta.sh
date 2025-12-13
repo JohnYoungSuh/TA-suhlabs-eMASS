@@ -1,0 +1,21 @@
+# Exclude approach - zips everything except unwanted files
+zip -r TA-suhlabs-eMASS-source.zip . \
+  -x "*.git*" \
+  -x "*/.claude/*" \
+  -x ".claude/*" \
+  -x "*.vscode*" \
+  -x "*__pycache__*" \
+  -x "*.pyc" \
+  -x ".venv/*" \
+  -x "output/*" \
+  -x "*.tar.gz" \
+  -x "*.log" \
+  -x ".pytest_cache/*" \
+  -x "*.DS_Store" \
+  -x "BUG_REPORT.md" \
+  -x "LESSONS_LEARNED.md" \
+  -x "TEST_RESULTS.md" \
+  -x "CHANGES_SUMMARY.md" \
+  -x "Dockerfile-splunk-local" \
+  -x "docker-compose.yml" \
+  -x "docs/*"

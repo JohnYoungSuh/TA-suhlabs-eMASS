@@ -19,13 +19,13 @@ services:
       timeout: 5s
       retries: 3
 
-  # Splunk with TA-securepro-eMASS
+  # Splunk with TA-suhlabs-eMASS
   splunk:
     build:
       context: ..
       dockerfile: Dockerfile-splunk-local
       args:
-        SPLUNK_APP_PACKAGE: output/TA-securepro-eMASS
+        SPLUNK_APP_PACKAGE: output/TA-suhlabs-eMASS
         SPLUNK_VERSION: 9.2.1
     container_name: splunk-emass-demo
     ports:
@@ -38,7 +38,7 @@ services:
     networks:
       - emass-demo-net
     volumes:
-      - ../output/TA-securepro-eMASS:/opt/splunk/etc/apps/TA-securepro-eMASS
+      - ../output/TA-suhlabs-eMASS:/opt/splunk/etc/apps/TA-suhlabs-eMASS
     depends_on:
       - mock-emass-api
     extra_hosts:

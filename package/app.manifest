@@ -1,24 +1,24 @@
 {
   "schemaVersion": "2.0.0",
   "info": {
-    "title": "SecurePro eMASS TA",
+    "title": "TA-suhlabs-eMASS",
     "id": {
       "group": null,
-      "name": "TA-securepro-eMASS",
+      "name": "TA-suhlabs-eMASS",
       "version": "1.0.0"
     },
     "author": [
       {
-        "name": "SecurePro",
+        "name": "TA-suhlabs-eMASS",
         "email": null,
-        "company": null
+        "company": "suhlabs"
       }
     ],
     "releaseDate": null,
-    "description": "Ingest POA&M data from eMASS",
+    "description": "Splunk Add-on for eMASS. Ingest POA&M data from eMASS.",
     "classification": {
       "intendedAudience": null,
-      "categories": [],
+      "categories": ["Security, Fraud & Compliance"],
       "developmentStatus": null
     },
     "commonInformationModels": null,

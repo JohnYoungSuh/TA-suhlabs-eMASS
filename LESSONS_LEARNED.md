@@ -1,4 +1,4 @@
-# Lessons Learned: TA-securepro-eMASS Project
+# Lessons Learned: TA-suhlabs-eMASS Project
 
 **Project:** Splunk UCC Technology Add-on Development
 **Date:** 2025-11-01
@@ -761,6 +761,349 @@ print(f"True generalization score: {final_score}")
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** 2025-11-01
+## Issue 8: UCC Outputs Page Not Supported (CRITICAL DISCOVERY)
+
+**Problem:**
+- Attempted to add an "outputs" page to `globalConfig.json`
+- Build failed with error: `Additional properties are not allowed ('outputs' was unexpected)`
+- Previous implementation was lost when another LLM deleted it
+
+**Root Cause:**
+UCC framework **does not support** a top-level "outputs" page in `globalConfig.json`
+
+**Supported Page Types:**
+```json
+{
+  "pages": {
+    "configuration": {},  // ✅ Supported
+    "inputs": {},         // ✅ Supported
+    "dashboard": {},      // ✅ Supported (UCC v5.42.0+)
+    "outputs": {}         // ❌ NOT SUPPORTED
+  }
+}
+```
+
+**Impact:**
+- 🔴 Critical: Lost output configuration when file was "cleaned up"
+- 🟡 Medium: Confusion about how to implement POST/PUT operations
+- 🟢 Low: Easy to fix once understood
+
+**Resolution:**
+Two approaches for output functionality:
+
+### Approach 1: Configuration Tab (IMPLEMENTED) ✅
+Add output settings as a **tab within the configuration page**:
+
+```json
+{
+  "pages": {
+    "configuration": {
+      "tabs": [
+        {
+          "name": "account",
+          "title": "eMASS Account"
+        },
+        {
+          "name": "output",           // ✅ Output tab
+          "title": "Output Settings",
+          "entity": [
+            {
+              "field": "name",
+              "label": "Output Name",
+              "type": "text",
+              "required": true
+            },
+            {
+              "field": "http_method",
+              "label": "HTTP Method",
+              "type": "singleSelect",
+              "options": {
+                "autoCompleteFields": [
+                  {"label": "POST - Create new POAM", "value": "POST"},
+                  {"label": "PUT - Update existing POAM", "value": "PUT"}
+                ]
+              }
+            },
+            {
+              "field": "endpoint",
+              "label": "API Endpoint",
+              "type": "text",
+              "defaultValue": "/api/systems/{system_id}/poams"
+            }
+          ]
+        },
+        {
+          "type": "loggingTab",
+          "label": "Log Level"
+        }
+      ]
+    }
+  }
+}
+```
+
+**Location in UI:** Configuration → Output Settings tab
+
+### Approach 2: Alert Actions (Alternative)
+For event-driven outputs, use alert actions:
+
+```json
+{
+  "alerts": [
+    {
+      "name": "emass_poam_update",
+      "label": "Update eMASS POAM",
+      "description": "Send POAM updates to eMASS via POST/PUT"
+    }
+  ]
+}
+```
+
+**Lesson Learned:**
+> **UCC configuration tabs vs. pages: Configuration tabs can hold any settings, including "output" configurations. Don't assume you need a separate page for every feature.**
+
+**Prevention:**
+- ✅ Document UCC schema limitations in this file
+- ✅ Keep `CHECKPOINTING_IMPLEMENTATION.md` as backup
+- ✅ Use version control to track `globalConfig.json` changes
+- ✅ Test build after any `globalConfig.json` modifications
+
+---
+
+## Issue 9: Checkpointing Implementation Best Practices
+
+**Problem:**
+- Checkpointing was imported but not implemented
+- Input collected ALL POAMs on every run
+- No duplicate prevention
+- Inefficient for large datasets
+
+**Root Cause:**
+Import statement existed but actual checkpointing logic was never added
+
+**Impact:**
+- 🟡 Medium: Duplicate events in Splunk
+- 🟡 Medium: Unnecessary API load
+- 🟢 Low: Works but inefficient
+
+**Resolution:**
+Implemented comprehensive checkpointing for both inputs and outputs
+
+### Input Checkpointing Pattern:
+
+```python
+from solnlib.modular_input import checkpointer
+
+# Initialize checkpointer
+ckpt = checkpointer.KVStoreCheckpointer(
+    "ta_suhlabs_emass_emass_poam",
+    session_key,
+    "TA-suhlabs-eMASS"
+)
+
+# Get last collection time
+checkpoint_key = f"{input_name}_last_collection"
+last_collection_time = ckpt.get(checkpoint_key)
+
+# Collect only new/updated data
+poams = self._collect_poams(api_url, api_key, user_uid, last_collection_time)
+
+# Update checkpoint after success
+current_time = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+ckpt.update(checkpoint_key, current_time)
+```
+
+### Filtering Strategy:
+
+1. **API Parameter**: Send `lastModifiedDate` to API
+2. **Client-side Filter**: Check multiple date fields:
+   - `lastModifiedDate`
+   - `last_modified_date`
+   - `updatedDate`
+   - `updated_date`
+   - `modifiedDate`
+3. **Safe Default**: Include POAMs without date fields
+
+### Output Modular Script:
+
+Created `package/bin/emass_poam_output.py` for POST/PUT operations:
+
+```python
+def _send_poam_update(
+    self, 
+    api_url: str, 
+    api_key: str, 
+    poam_data: Dict[str, Any],
+    http_method: str = "POST",
+    user_uid: Optional[str] = None,
+    poam_id: Optional[str] = None
+) -> bool:
+    """Send POAM update to eMASS API"""
+    
+    # Construct URL based on method
+    if http_method == "PUT" and poam_id:
+        url = f"{api_url}/{poam_id}"
+    else:
+        url = api_url
+    
+    # Send request
+    if http_method == "POST":
+        response = requests.post(url, headers=headers, json=poam_data, timeout=30)
+    elif http_method == "PUT":
+        response = requests.put(url, headers=headers, json=poam_data, timeout=30)
+    
+    return response.status_code in [200, 201, 204]
+```
+
+**Lesson Learned:**
+> **Checkpointing is essential for production modular inputs. Always implement it from the start, not as an afterthought.**
+
+**Best Practices:**
+- ✅ Use KVStoreCheckpointer for persistence
+- ✅ Store ISO 8601 timestamps
+- ✅ Filter by multiple date field names (APIs vary)
+- ✅ Update checkpoint only after successful write
+- ✅ Handle first-time runs gracefully (no checkpoint)
+- ✅ Log checkpoint updates for debugging
+
+**Files Involved:**
+- `package/bin/emass_poam.py` - Input with checkpointing
+- `package/bin/emass_poam_output.py` - Output modular script
+- `CHECKPOINTING_IMPLEMENTATION.md` - Full documentation
+
+---
+
+## Issue 10: Splunkbase Packaging Commands
+
+**Problem:**
+- Unclear how to package add-on for Splunkbase submission
+- Multiple UCC commands available but documentation sparse
+
+**Resolution:**
+
+### Complete Build & Package Workflow:
+
+```bash
+# 1. Clean previous builds
+rm -rf output
+
+# 2. Build the add-on
+make build
+
+# OR manually:
+source .venv/bin/activate
+ucc-gen build --source package --ta-version 1.0.0
+
+# 3. Package for Splunkbase
+source .venv/bin/activate
+ucc-gen package --path output/TA-suhlabs-eMASS
+```
+
+**Output:**
+- Creates: `TA-suhlabs-eMASS-<version>.tar.gz`
+- Location: Project root directory
+- Ready for: Splunkbase upload
+
+**Lesson Learned:**
+> **The `ucc-gen package` command requires the built output directory path, not the source package directory.**
+
+**Splunkbase Checklist:**
+- ✅ Version in `globalConfig.json` is correct
+- ✅ `app.manifest` metadata is complete
+- ✅ README and documentation updated
+- ✅ Screenshots prepared
+- ✅ Test `.tar.gz` in clean Splunk instance
+- ✅ No Mako templates (security check)
+- ✅ No compiled binaries (aarch64 compatibility)
+
+---
+
+## Issue 11: Security and Compatibility Checks
+
+**Problem:**
+- Splunkbase has strict security and compatibility requirements
+- Two specific checks mentioned:
+  1. `check_for_existence_of_python_code_block_in_mako_template`
+  2. `check_idx_binary_compatibility`
+
+**Investigation Results:**
+
+### Check 1: Mako Templates ✅ PASS
+```bash
+find . -name "*.mako" -o -name "*.tmpl"
+# Result: No files found (only in venv dependencies)
+```
+
+**Finding:** No Mako templates in project code
+- Mako only exists in virtual environment (pip packages)
+- No security vulnerability from deprecated templates
+
+### Check 2: Binary Compatibility ✅ PASS
+```bash
+find package/bin -type f ! -name "*.py" ! -name "*.sh" ! -name "*.txt"
+# Result: No compiled binaries
+```
+
+**Finding:** Pure Python implementation
+- No compiled binaries distributed
+- Works on all architectures (x86_64, aarch64, etc.)
+- No compatibility issues with ARM-based indexers
+
+**Lesson Learned:**
+> **Pure Python add-ons are ideal for Splunkbase - they're secure, portable, and have no architecture dependencies.**
+
+**Best Practices:**
+- ✅ Avoid Mako templates (use Jinja2 if templating needed)
+- ✅ Avoid compiled binaries (use pure Python)
+- ✅ Test on multiple architectures if binaries required
+- ✅ Document any platform-specific requirements
+
+---
+
+## Summary of New Lessons (2025-11-21)
+
+### Critical Discoveries:
+1. **UCC does NOT support top-level "outputs" page** - use configuration tabs instead
+2. **Checkpointing must be actively implemented** - import alone does nothing
+3. **Configuration tabs are flexible** - can hold any settings, not just accounts
+4. **Pure Python is best** - avoids security and compatibility issues
+
+### Implementation Patterns:
+
+#### Pattern 1: Configuration Tab for Outputs
+```
+Configuration Page
+├── Account Tab
+├── Output Settings Tab ← Add here, not as separate page
+└── Logging Tab
+```
+
+#### Pattern 2: Checkpointing
+```python
+# Initialize → Get → Filter → Process → Update
+ckpt = KVStoreCheckpointer(...)
+last_time = ckpt.get(key)
+data = collect_filtered(last_time)
+process(data)
+ckpt.update(key, current_time)
+```
+
+#### Pattern 3: Modular Output
+```python
+# Separate script: package/bin/{name}_output.py
+# Configured via: Configuration → Output Settings tab
+# Triggered by: Splunk scheduler or events
+```
+
+### Files to Preserve:
+- ✅ `globalConfig.json` - Contains output tab configuration
+- ✅ `package/bin/emass_poam.py` - Input with checkpointing
+- ✅ `package/bin/emass_poam_output.py` - Output script
+- ✅ `CHECKPOINTING_IMPLEMENTATION.md` - Implementation docs
+- ✅ `LESSONS_LEARNED.md` - This file
+
+---
+
+**Document Version:** 2.0
+**Last Updated:** 2025-11-21
 **Status:** Complete

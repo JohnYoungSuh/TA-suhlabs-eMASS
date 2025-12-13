@@ -1,0 +1,61 @@
+# NOTICE
+
+## Project Background
+
+This Splunk Technology Add-on for eMASS (TA-suhlabs-eMASS) is provided as an 
+open-source contribution to benefit U.S. Government programs and agencies that 
+require integration between eMASS (Enterprise Mission Assurance Support Service) 
+and Splunk for security compliance monitoring.
+
+## Development History
+
+Initial development of this software began during government-funded hours. 
+Subsequent enhancements, optimizations, and maintenance have been performed 
+by the author on their own personal time without government compensation.
+
+## Purpose and Intent
+
+This software is released under the MIT License with the following intentions:
+
+1. **Public Benefit**: To provide federal agencies and government contractors 
+   with a freely available, production-ready solution for eMASS data integration 
+   with Splunk.
+
+2. **Risk Mitigation**: The MIT License explicitly disclaims all warranties and 
+   liabilities. Users accept this software "as-is" and assume all risks 
+   associated with its use.
+
+3. **Professional Contribution**: This release is made in the spirit of supporting 
+   the cybersecurity and compliance communities within the federal government and 
+   contractor ecosystem.
+
+## Third-Party Dependencies
+
+This software integrates with and was validated using:
+
+- **eMASS Client Libraries**: [https://github.com/mitre/emass_client](https://github.com/mitre/emass_client) (Apache 2.0 License)
+- **Splunk UCC Framework**: [https://github.com/splunk/addonfactory-ucc-generator](https://github.com/splunk/addonfactory-ucc-generator)
+
+All third-party dependencies retain their original licenses.
+
+## Disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+SOFTWARE.
+
+## Security Clearance Considerations
+
+This software contains no classified information, controlled unclassified 
+information (CUI), or export-controlled technical data. All code is based on 
+publicly available APIs and documentation.
+
+---
+
+**RECOMMENDATION**: Before using this software in any government system, consult 
+your agency's Information Assurance office, legal counsel, and obtain appropriate 
+Authority to Operate (ATO) approvals per your organization's requirements.

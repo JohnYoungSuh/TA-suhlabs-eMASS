@@ -1,0 +1,72 @@
+import import_declare_test
+
+{% if not input_helper_module -%}
+import json
+{% endif -%}
+import sys
+
+from splunklib import modularinput as smi
+{%- if input_helper_module %}
+from {{ input_helper_module }} import stream_events, validate_input
+{%- endif %}
+
+
+class {{class_name}}(smi.Script):
+    def __init__(self):
+        super({{class_name}}, self).__init__()
+
+    def get_scheme(self):
+        scheme = smi.Scheme('{{input_name}}')
+        scheme.description = '{{description}}'
+        scheme.use_external_validation = True
+        scheme.streaming_mode_xml = True
+        scheme.use_single_instance = False
+
+        scheme.add_argument(
+            smi.Argument(
+                'name',
+                title='Name',
+                description='Name',
+                required_on_create=True
+            )
+        )
+        {%- for ent in entity %}
+        scheme.add_argument(
+            smi.Argument(
+                '{{ent.get("field")}}',
+                required_on_create={{True if ent.get("required") else False}},
+            )
+        )
+        {%- endfor %}
+        return scheme
+
+    def validate_input(self, definition: smi.ValidationDefinition):
+        {%- if input_helper_module and validate_input_self %}
+        return validate_input(self, definition)
+        {%- elif input_helper_module %}
+        return validate_input(definition)
+        {%- else %}
+        return
+        {%- endif %}
+
+    def stream_events(self, inputs: smi.InputDefinition, ew: smi.EventWriter):
+        {%- if input_helper_module and stream_events_self %}
+        return stream_events(self, inputs, ew)
+        {%- elif input_helper_module %}
+        return stream_events(inputs, ew)
+        {%- else %}
+        input_items = [{'count': len(inputs.inputs)}]
+        for input_name, input_item in inputs.inputs.items():
+            input_item['name'] = input_name
+            input_items.append(input_item)
+        event = smi.Event(
+            data=json.dumps(input_items),
+            sourcetype='{{input_name}}',
+        )
+        ew.write_event(event)
+        {%- endif %}
+
+
+if __name__ == '__main__':
+    exit_code = {{class_name}}().run(sys.argv)
+    sys.exit(exit_code)
