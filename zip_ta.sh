@@ -1,21 +1,40 @@
-# Exclude approach - zips everything except unwanted files
-zip -r TA-suhlabs-eMASS-source.zip . \
-  -x "*.git*" \
-  -x "*/.claude/*" \
-  -x ".claude/*" \
-  -x "*.vscode*" \
-  -x "*__pycache__*" \
-  -x "*.pyc" \
-  -x ".venv/*" \
-  -x "output/*" \
-  -x "*.tar.gz" \
-  -x "*.log" \
-  -x ".pytest_cache/*" \
-  -x "*.DS_Store" \
-  -x "BUG_REPORT.md" \
-  -x "LESSONS_LEARNED.md" \
-  -x "TEST_RESULTS.md" \
-  -x "CHANGES_SUMMARY.md" \
-  -x "Dockerfile-splunk-local" \
-  -x "docker-compose.yml" \
-  -x "docs/*"
+#!/bin/bash
+# Package the built app for Splunkbase (requires .tar.gz)
+
+APP_NAME="TA-suhlabs-eMASS"
+OUTPUT_DIR="output"
+PACKAGE_FILE="${APP_NAME}.tar.gz"
+
+echo "Creating Splunkbase package: $PACKAGE_FILE"
+
+# Ensure build exists
+if [ ! -d "$OUTPUT_DIR/$APP_NAME" ]; then
+    echo "❌ Error: Build output not found in $OUTPUT_DIR/$APP_NAME"
+    echo "   Please run 'make build' first."
+    exit 1
+fi
+
+# Create .tar.gz from the output directory
+# -C changes directory to output so the tarball starts with TA-suhlabs-eMASS/
+# Exclude 'local' (runtime config) and other temporary files
+# NOTE: Put excludes BEFORE the directory name to avoid "options used after non-option arguments"
+tar -czf "$PACKAGE_FILE" \
+    --exclude "TA-suhlabs-eMASS/local" \
+    --exclude "TA-suhlabs-eMASS/metadata/local.meta" \
+    --exclude "__pycache__" \
+    --exclude "*.pyc" \
+    --exclude ".DS_Store" \
+    -C "$OUTPUT_DIR" "$APP_NAME"
+
+if [ $? -eq 0 ]; then
+    echo "✅ Successfully created $PACKAGE_FILE"
+    echo "   Size: $(du -h $PACKAGE_FILE | cut -f1)"
+    echo "   Ready for upload to Splunkbase!"
+else
+    echo "❌ Error creating package."
+    echo ""
+    echo "This is likely a permission issue because Docker created files as root."
+    echo "Try running this command to fix ownership:"
+    echo "  sudo chown -R \$USER:\$USER $OUTPUT_DIR"
+    exit 1
+fi

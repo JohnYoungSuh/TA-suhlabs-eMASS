@@ -24,8 +24,24 @@ if [ ! -d "$OUTPUT_DIR" ]; then
     exit 1
 fi
 
-# Copy appserver files
-cp -r "$UCC_UI_SOURCE" "$OUTPUT_DIR/"
+# Copy appserver/static files (JS/CSS/images)
+# Ensure destination structure exists
+mkdir -p "$OUTPUT_DIR/appserver/static"
+
+# Copy static content if it exists
+if [ -d "$UCC_UI_SOURCE/static" ]; then
+    echo "Copying static assets..."
+    cp -r "$UCC_UI_SOURCE/static/"* "$OUTPUT_DIR/appserver/static/"
+fi
+
+# Copy redirect.html (critical for UI routing)
+if [ -f "$UCC_UI_SOURCE/templates/redirect.html" ]; then
+    echo "Copying redirect.html..."
+    mkdir -p "$OUTPUT_DIR/appserver/templates"
+    cp "$UCC_UI_SOURCE/templates/redirect.html" "$OUTPUT_DIR/appserver/templates/"
+fi
+
+# Do NOT copy base.html to avoid overwriting our custom one
 
 echo "✓ Copied UI files successfully"
 echo "  JS files: $(find $OUTPUT_DIR/appserver/static/js/build -name '*.js' | wc -l)"

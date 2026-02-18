@@ -1,13 +1,1 @@
-/* Hide UCC branding footer */
-footer[data-test="footer"],
-div[data-test="footer"],
-.footer-text,
-a[href*="splunk-add-on-ucc-framework"],
-div:has(> a[href*="splunk-add-on-ucc-framework"]) {
-    display: none !important;
-}
-
-/* Hide any element containing "Made with" text */
-*:contains("Made with") {
-    display: none !important;
-}
+/* CSS cleared to prevent hiding modal buttons */

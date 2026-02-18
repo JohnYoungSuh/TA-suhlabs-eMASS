@@ -19,6 +19,7 @@ This document captures critical lessons learned from building a Splunk UCC-based
 ### Issue 1: Virtual Environment Location (ROOT CAUSE)
 
 **Problem:**
+
 - Build inconsistencies
 - Dependencies not found
 - UCC not generating files properly
@@ -28,25 +29,30 @@ This document captures critical lessons learned from building a Splunk UCC-based
 Virtual environment created in `package/.venv/` instead of project root `.venv/`
 
 **Why This Happened:**
+
 - Misunderstanding of UCC documentation
 - Assumption that venv should be near source files
 - No explicit error message from UCC about wrong venv location
 
 **Impact:**
+
 - 🔴 Critical: Caused cascading failures in all build steps
 - 🔴 Critical: Masked the real UCC 6.0.1 UI bug
 - 🟡 Medium: Wasted 2+ hours debugging secondary symptoms
 
 **Resolution:**
+
 1. Deleted `package/.venv/`
 2. Created `.venv/` at project root
 3. Updated Makefile `VENV := .venv`
 4. Reinstalled UCC 6.0.1 in correct location
 
 **Lesson Learned:**
+
 > **Always verify infrastructure assumptions first before debugging application logic.**
 
 **Prevention:**
+
 - Add preflight check: `test ! -d package/.venv`
 - Document venv location explicitly in README
 - Use absolute paths in documentation
@@ -62,10 +68,12 @@ Only `globalConfig.json` generated in `appserver/static/js/build/`, missing 22 J
 UCC 6.0.1 packaging bug - UI files included in wheel package but not copied during `ucc-gen build`
 
 **Why This Happened:**
+
 - UCC v6.0.1 changelog claims to fix "include built UI files in the wheel package"
 - Fix was incomplete - files are IN the package but build command doesn't copy them
 
 **Impact:**
+
 - 🔴 Critical: Configuration and Inputs pages won't render in Splunk Web
 - 🟡 Medium: Silent failure (build succeeds but UI broken)
 - 🟢 Low: Workaround available
@@ -74,9 +82,11 @@ UCC 6.0.1 packaging bug - UI files included in wheel package but not copied duri
 Created `fix_ui.sh` script to manually copy UI files from UCC package to output after build
 
 **Lesson Learned:**
+
 > **Don't assume version increments fix all related issues. Verify the fix addresses your specific problem.**
 
 **Prevention:**
+
 - Test UI file generation in CI/CD pipeline
 - Add validation check for minimum JS file count
 - Monitor UCC release notes for permanent fix
@@ -87,6 +97,7 @@ Created `fix_ui.sh` script to manually copy UI files from UCC package to output 
 
 **Problem:**
 VSCode validation errors: "invalid key in stanza"
+
 - `handlertype = python`
 - `handlerpersistentmode = true`
 
@@ -94,29 +105,68 @@ VSCode validation errors: "invalid key in stanza"
 Invalid Splunk configuration keys (not part of restmap.conf specification)
 
 **Why This Happened:**
+
 - Copied from outdated example or documentation
 - No validation during UCC generation
 - VSCode caught it but build didn't fail
 
 **Impact:**
+
 - 🟡 Medium: Confusing validation errors
 - 🟡 Medium: Potential runtime issues with REST endpoints
 - 🟢 Low: Easy to fix once identified
 
 **Resolution:**
 Removed invalid keys, kept only valid ones:
+
 - `handlerfile`
 - `handleractions`
 - `match`
 - `members`
 
 **Lesson Learned:**
+
 > **IDE warnings are valuable signals. Don't ignore them even if builds succeed.**
 
 **Prevention:**
+
 - Validate configuration files against official Splunk specs
 - Use linters specific to Splunk configuration
 - Create validation test in Makefile
+
+---
+
+### Issue 4: Docker Permission Denied on Output Directory
+
+**Problem:**
+Packaging scripts or manual file operations fail with "Permission denied" when accessing `output/TA-suhlabs-eMASS/local` or `metadata/local.meta`.
+
+**Root Cause:**
+The `make build` process runs `docker compose up`, which mounts the `output/` directory into the Splunk container. Splunk runs as root (or the splunk user) inside the container and creates runtime files (like `local/` configs) with `root` ownership. The host user (WSL) cannot modify or read them.
+
+**Why This Happened:**
+
+- Docker volumes inherit permissions from the container process.
+- Splunk writes runtime files to `etc/apps/TA-suhlabs-eMASS/local` upon startup.
+
+**Impact:**
+
+- 🔴 Critical: Packaging scripts fail.
+- 🟡 Medium: User cannot delete or modify output folder without `sudo`.
+
+**Resolution:**
+
+- Added ownership fix command to documentation/scripts: `sudo chown -R $USER:$USER output/`
+- Updated packaging script to warn about this specific issue.
+
+**Lesson Learned:**
+
+> **Docker-generated artifacts often require explicit ownership fixes before host processing.**
+
+**Prevention:**
+
+- Add a `fix-perms` target to Makefile.
+- Run Docker containers with the `--user` flag matching the host (though complex with Splunk).
 
 ---
 
@@ -125,6 +175,7 @@ Removed invalid keys, kept only valid ones:
 ### 1. ❌ Nested Virtual Environments
 
 **Antipattern:**
+
 ```
 project/
 ├── package/
@@ -132,6 +183,7 @@ project/
 ```
 
 **Correct Pattern:**
+
 ```
 project/
 ├── .venv/              ✅ CORRECT
@@ -139,11 +191,13 @@ project/
 ```
 
 **Why It's Wrong:**
+
 - UCC expects venv at project root
 - Creates confusion about dependency scope
 - Breaks relative path assumptions
 
 **Rule:**
+
 > Virtual environments belong at the PROJECT ROOT, not in subdirectories.
 
 ---
@@ -151,12 +205,14 @@ project/
 ### 2. ❌ Assuming Build Success = Deployment Ready
 
 **Antipattern:**
+
 ```bash
 ucc-gen build --source package
 # Build succeeded! Ship it!
 ```
 
 **Correct Pattern:**
+
 ```bash
 ucc-gen build --source package
 ./fix_ui.sh
@@ -166,11 +222,13 @@ make validate  # Verify outputs
 ```
 
 **Why It's Wrong:**
+
 - Build can succeed but miss critical files (UI bundles)
 - Silent failures harm user experience
 - No validation = undetected issues
 
 **Rule:**
+
 > Always validate build outputs, not just build exit codes.
 
 ---
@@ -178,6 +236,7 @@ make validate  # Verify outputs
 ### 3. ❌ Hardcoded Paths in Build Scripts
 
 **Antipattern:**
+
 ```makefile
 VENV := package/.venv
 build:
@@ -185,6 +244,7 @@ build:
 ```
 
 **Correct Pattern:**
+
 ```makefile
 VENV := .venv
 PKG_DIR := package
@@ -193,11 +253,13 @@ build:
 ```
 
 **Why It's Wrong:**
+
 - Brittle when directory structure changes
 - Hard to test in different environments
 - Violates principle of least surprise
 
 **Rule:**
+
 > Use variables and relative paths that work from project root.
 
 ---
@@ -205,11 +267,13 @@ build:
 ### 4. ❌ Ignoring Version Changelog Details
 
 **Antipattern:**
+
 ```
 v6.0.1 says "fixes UI files" → Upgrade → Assume fixed
 ```
 
 **Correct Pattern:**
+
 ```
 v6.0.1 says "fixes UI files"
 → Upgrade
@@ -219,11 +283,13 @@ v6.0.1 says "fixes UI files"
 ```
 
 **Why It's Wrong:**
+
 - Changelog may describe partial fixes
 - Your specific use case might not be covered
 - Silent regressions possible
 
 **Rule:**
+
 > Trust but verify. Always test that version upgrades solve YOUR problem.
 
 ---
@@ -231,21 +297,25 @@ v6.0.1 says "fixes UI files"
 ### 5. ❌ No Validation Layer Between Build and Deploy
 
 **Antipattern:**
+
 ```
 Build → Deploy to Production
 ```
 
 **Correct Pattern:**
+
 ```
 Build → Validate → Test → Deploy to Production
 ```
 
 **Why It's Wrong:**
+
 - Missing files discovered in production
 - No safety net for silent failures
 - Difficult to debug production issues
 
 **Rule:**
+
 > Add a validation step that checks for required artifacts before deployment.
 
 ---
@@ -255,6 +325,7 @@ Build → Validate → Test → Deploy to Production
 ### 1. ✅ Preflight Checks
 
 **Implementation:**
+
 ```makefile
 .PHONY: preflight
 preflight:
@@ -271,6 +342,7 @@ Catches infrastructure issues before wasting time on build
 ### 2. ✅ Comprehensive Validation
 
 **Implementation:**
+
 ```makefile
 validate:
     @test -f output/app.conf
@@ -286,6 +358,7 @@ Detects missing components immediately after build
 ### 3. ✅ Structured JSON Logging
 
 **Implementation:**
+
 ```makefile
 build:
     @echo '{"step":"build","ts":"'$(date -Iseconds)'"}'
@@ -294,6 +367,7 @@ build:
 ```
 
 **Benefit:**
+
 - Parseable logs for CI/CD
 - Easy to track progress
 - Machine-readable status
@@ -303,12 +377,14 @@ build:
 ### 4. ✅ Documentation as Code
 
 **Files Created:**
+
 - `CHANGES_SUMMARY.md` - Complete change history
 - `BUG_REPORT.md` - Reproducible bug report
 - `TEST_RESULTS.md` - Validation evidence
 - `LESSONS_LEARNED.md` - This document
 
 **Benefit:**
+
 - Knowledge transfer
 - Future debugging reference
 - Onboarding new developers
@@ -318,6 +394,7 @@ build:
 ### 5. ✅ Workaround Scripts with Clear Purpose
 
 **Implementation:**
+
 ```bash
 #!/bin/bash
 # fix_ui.sh - Workaround for UCC 6.0.1 UI bug
@@ -328,6 +405,7 @@ cp -r .venv/lib/.../appserver output/
 ```
 
 **Benefit:**
+
 - Clear intent documented
 - Easy to remove when bug fixed
 - Self-documenting code
@@ -339,6 +417,7 @@ cp -r .venv/lib/.../appserver output/
 ### ML Antipattern 1: ❌ Training on Entire Dataset Without Validation Split
 
 **Antipattern:**
+
 ```python
 # Load all data
 X, y = load_data()
@@ -351,12 +430,14 @@ print(f"Accuracy: {model.score(X, y)}")  # 99%! 🎉
 ```
 
 **Why It's Wrong:**
+
 - **Overfitting:** Model memorizes training data
 - **No generalization:** High train accuracy, poor real-world performance
 - **Data leakage:** Test metrics meaningless
 - **False confidence:** Can't detect when model fails on new data
 
 **Correct Pattern:**
+
 ```python
 from sklearn.model_selection import train_test_split
 
@@ -376,11 +457,13 @@ print(f"Test Accuracy: {test_accuracy}")
 ```
 
 **Impact:**
+
 - 🔴 Critical: Model useless in production
 - 🔴 Critical: Wasted compute resources
 - 🔴 Critical: False business decisions based on inflated metrics
 
 **Rule:**
+
 > **Always split data BEFORE training. Never evaluate on training data.**
 
 ---
@@ -388,6 +471,7 @@ print(f"Test Accuracy: {test_accuracy}")
 ### ML Antipattern 2: ❌ Leaking Information from Test Set
 
 **Antipattern:**
+
 ```python
 # Scale entire dataset first
 scaler = StandardScaler()
@@ -400,12 +484,14 @@ model.fit(X_train, y_train)
 ```
 
 **Why It's Wrong:**
+
 - **Data leakage:** Scaler "sees" test set during fit()
 - **Optimistic metrics:** Test set influenced by training distribution
 - **Won't work in production:** New data won't have same scaling
 - **Subtle bug:** Metrics look good but model fails on real data
 
 **Correct Pattern:**
+
 ```python
 # Split FIRST
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
@@ -422,11 +508,13 @@ model.score(X_test_scaled, y_test)
 ```
 
 **Impact:**
+
 - 🔴 Critical: 5-20% drop in production accuracy
 - 🟡 Medium: Expensive retraining required
 - 🟡 Medium: Loss of user trust
 
 **Rule:**
+
 > **Fit preprocessing ONLY on training data. Transform test data using training parameters.**
 
 ---
@@ -434,6 +522,7 @@ model.score(X_test_scaled, y_test)
 ### ML Antipattern 3: ❌ Not Setting Random Seeds
 
 **Antipattern:**
+
 ```python
 # No random seed
 X_train, X_test = train_test_split(X, y, test_size=0.2)
@@ -447,12 +536,14 @@ model.fit(X_train, y_train)
 ```
 
 **Why It's Wrong:**
+
 - **Non-reproducible:** Can't recreate results
 - **Can't debug:** Different results each run
 - **No collaboration:** Team can't verify findings
 - **Hyperparameter tuning useless:** Can't tell if improvement is real or random
 
 **Correct Pattern:**
+
 ```python
 import random
 import numpy as np
@@ -472,11 +563,13 @@ model.fit(X_train, y_train)
 ```
 
 **Impact:**
+
 - 🔴 Critical: Results not reproducible
 - 🟡 Medium: Wastes time debugging phantom issues
 - 🟡 Medium: Can't comply with audit requirements
 
 **Rule:**
+
 > **Always set random seeds for reproducibility. Document the seed value.**
 
 ---
@@ -484,6 +577,7 @@ model.fit(X_train, y_train)
 ### ML Antipattern 4: ❌ Using Accuracy for Imbalanced Datasets
 
 **Antipattern:**
+
 ```python
 # Fraud detection: 99% legitimate, 1% fraud
 y = [0, 0, 0, ..., 1]  # 99% class 0, 1% class 1
@@ -499,12 +593,14 @@ print(f"Accuracy: {accuracy}")  # 99%! 🎉
 ```
 
 **Why It's Wrong:**
+
 - **Misleading metric:** 99% accuracy but catches 0% fraud
 - **Class imbalance ignored:** Minority class not learned
 - **Business impact:** Expensive false negatives
 - **Wrong optimization:** Model learns to ignore minority class
 
 **Correct Pattern:**
+
 ```python
 from sklearn.metrics import classification_report, confusion_matrix, f1_score, roc_auc_score
 
@@ -529,11 +625,13 @@ print(f"ROC AUC: {auc}")
 ```
 
 **Impact:**
+
 - 🔴 Critical: Model useless for intended purpose
 - 🔴 Critical: Business losses (missed fraud, failed diagnoses)
 - 🟡 Medium: Wasted model development effort
 
 **Rule:**
+
 > **For imbalanced data, use precision, recall, F1-score, or ROC AUC instead of accuracy.**
 
 ---
@@ -541,6 +639,7 @@ print(f"ROC AUC: {auc}")
 ### ML Antipattern 5: ❌ Feature Engineering After Train/Test Split
 
 **Antipattern:**
+
 ```python
 # Split first
 X_train, X_test = train_test_split(data, test_size=0.2)
@@ -553,12 +652,14 @@ X_test['new_feature'] = complex_calculation(X_test)    # ❌
 ```
 
 **Why It's Wrong:**
+
 - **Inconsistent features:** Different calculations on train vs test
 - **Can't reproduce in production:** Feature engineering not in pipeline
 - **Data leakage risk:** If calculation uses global statistics
 - **Maintenance nightmare:** Feature logic in multiple places
 
 **Correct Pattern:**
+
 ```python
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
@@ -587,11 +688,13 @@ pipeline.score(X_test, y_test)
 ```
 
 **Impact:**
+
 - 🔴 Critical: Production model fails due to feature mismatch
 - 🟡 Medium: Difficult to debug feature inconsistencies
 - 🟡 Medium: Expensive retraining required
 
 **Rule:**
+
 > **Encode feature engineering in a pipeline. Apply consistently to train, test, and production.**
 
 ---
@@ -599,6 +702,7 @@ pipeline.score(X_test, y_test)
 ### ML Antipattern 6: ❌ Not Validating Input Data Schema
 
 **Antipattern:**
+
 ```python
 # Load model
 model = load_model('fraud_detector.pkl')
@@ -613,12 +717,14 @@ prediction = model.predict(new_data)  # 💥 Error: feature mismatch!
 ```
 
 **Why It's Wrong:**
+
 - **Silent failures:** Model expects different features
 - **Runtime errors:** Production crashes
 - **Incorrect predictions:** Wrong features used
 - **No validation:** Changes undetected until production
 
 **Correct Pattern:**
+
 ```python
 from pydantic import BaseModel, validator
 
@@ -653,11 +759,13 @@ def predict(raw_data):
 ```
 
 **Impact:**
+
 - 🔴 Critical: Production failures
 - 🔴 Critical: Incorrect business decisions
 - 🟡 Medium: Emergency hotfixes required
 
 **Rule:**
+
 > **Validate input data schema before model prediction. Fail fast on mismatches.**
 
 ---
@@ -665,6 +773,7 @@ def predict(raw_data):
 ### ML Antipattern 7: ❌ Overfitting to Validation Set
 
 **Antipattern:**
+
 ```python
 # Hyperparameter tuning
 X_train, X_val = train_test_split(X, y, test_size=0.2)
@@ -688,12 +797,14 @@ for depth in range(1, 100):
 ```
 
 **Why It's Wrong:**
+
 - **Validation set memorization:** Picked parameters that work for THIS validation set
 - **Optimistic metrics:** Performance drops on truly new data
 - **No test set:** Can't measure true generalization
 - **Multiple testing problem:** Trying many parameters inflates metrics
 
 **Correct Pattern:**
+
 ```python
 from sklearn.model_selection import GridSearchCV
 
@@ -725,11 +836,13 @@ print(f"True generalization score: {final_score}")
 ```
 
 **Impact:**
+
 - 🔴 Critical: 10-30% performance drop in production
 - 🟡 Medium: Wasted hyperparameter tuning effort
 - 🟡 Medium: Expensive retraining
 
 **Rule:**
+
 > **Use cross-validation for hyperparameter tuning. Always evaluate on a held-out test set.**
 
 ---
@@ -737,6 +850,7 @@ print(f"True generalization score: {final_score}")
 ## Summary: Key Takeaways
 
 ### UCC Development
+
 1. ✅ Virtual environments belong at project root
 2. ✅ Validate build outputs, not just exit codes
 3. ✅ Trust but verify version upgrade fixes
@@ -744,6 +858,7 @@ print(f"True generalization score: {final_score}")
 5. ✅ Document workarounds with clear intent
 
 ### Machine Learning
+
 1. ✅ Always split data before any preprocessing
 2. ✅ Fit preprocessing only on training data
 3. ✅ Set random seeds for reproducibility
@@ -753,6 +868,7 @@ print(f"True generalization score: {final_score}")
 7. ✅ Use cross-validation for hyperparameter tuning
 
 ### Universal Principles
+
 - **Verify assumptions before debugging logic**
 - **Validate outputs at every stage**
 - **Document workarounds and their purpose**
@@ -764,6 +880,7 @@ print(f"True generalization score: {final_score}")
 ## Issue 8: UCC Outputs Page Not Supported (CRITICAL DISCOVERY)
 
 **Problem:**
+
 - Attempted to add an "outputs" page to `globalConfig.json`
 - Build failed with error: `Additional properties are not allowed ('outputs' was unexpected)`
 - Previous implementation was lost when another LLM deleted it
@@ -772,18 +889,20 @@ print(f"True generalization score: {final_score}")
 UCC framework **does not support** a top-level "outputs" page in `globalConfig.json`
 
 **Supported Page Types:**
+
 ```json
 {
   "pages": {
-    "configuration": {},  // ✅ Supported
-    "inputs": {},         // ✅ Supported
-    "dashboard": {},      // ✅ Supported (UCC v5.42.0+)
-    "outputs": {}         // ❌ NOT SUPPORTED
+    "configuration": {}, // ✅ Supported
+    "inputs": {}, // ✅ Supported
+    "dashboard": {}, // ✅ Supported (UCC v5.42.0+)
+    "outputs": {} // ❌ NOT SUPPORTED
   }
 }
 ```
 
 **Impact:**
+
 - 🔴 Critical: Lost output configuration when file was "cleaned up"
 - 🟡 Medium: Confusion about how to implement POST/PUT operations
 - 🟢 Low: Easy to fix once understood
@@ -792,6 +911,7 @@ UCC framework **does not support** a top-level "outputs" page in `globalConfig.j
 Two approaches for output functionality:
 
 ### Approach 1: Configuration Tab (IMPLEMENTED) ✅
+
 Add output settings as a **tab within the configuration page**:
 
 ```json
@@ -804,7 +924,7 @@ Add output settings as a **tab within the configuration page**:
           "title": "eMASS Account"
         },
         {
-          "name": "output",           // ✅ Output tab
+          "name": "output", // ✅ Output tab
           "title": "Output Settings",
           "entity": [
             {
@@ -819,8 +939,8 @@ Add output settings as a **tab within the configuration page**:
               "type": "singleSelect",
               "options": {
                 "autoCompleteFields": [
-                  {"label": "POST - Create new POAM", "value": "POST"},
-                  {"label": "PUT - Update existing POAM", "value": "PUT"}
+                  { "label": "POST - Create new POAM", "value": "POST" },
+                  { "label": "PUT - Update existing POAM", "value": "PUT" }
                 ]
               }
             },
@@ -845,6 +965,7 @@ Add output settings as a **tab within the configuration page**:
 **Location in UI:** Configuration → Output Settings tab
 
 ### Approach 2: Alert Actions (Alternative)
+
 For event-driven outputs, use alert actions:
 
 ```json
@@ -860,9 +981,11 @@ For event-driven outputs, use alert actions:
 ```
 
 **Lesson Learned:**
+
 > **UCC configuration tabs vs. pages: Configuration tabs can hold any settings, including "output" configurations. Don't assume you need a separate page for every feature.**
 
 **Prevention:**
+
 - ✅ Document UCC schema limitations in this file
 - ✅ Keep `CHECKPOINTING_IMPLEMENTATION.md` as backup
 - ✅ Use version control to track `globalConfig.json` changes
@@ -873,6 +996,7 @@ For event-driven outputs, use alert actions:
 ## Issue 9: Checkpointing Implementation Best Practices
 
 **Problem:**
+
 - Checkpointing was imported but not implemented
 - Input collected ALL POAMs on every run
 - No duplicate prevention
@@ -882,6 +1006,7 @@ For event-driven outputs, use alert actions:
 Import statement existed but actual checkpointing logic was never added
 
 **Impact:**
+
 - 🟡 Medium: Duplicate events in Splunk
 - 🟡 Medium: Unnecessary API load
 - 🟢 Low: Works but inefficient
@@ -930,35 +1055,37 @@ Created `package/bin/emass_poam_output.py` for POST/PUT operations:
 
 ```python
 def _send_poam_update(
-    self, 
-    api_url: str, 
-    api_key: str, 
+    self,
+    api_url: str,
+    api_key: str,
     poam_data: Dict[str, Any],
     http_method: str = "POST",
     user_uid: Optional[str] = None,
     poam_id: Optional[str] = None
 ) -> bool:
     """Send POAM update to eMASS API"""
-    
+
     # Construct URL based on method
     if http_method == "PUT" and poam_id:
         url = f"{api_url}/{poam_id}"
     else:
         url = api_url
-    
+
     # Send request
     if http_method == "POST":
         response = requests.post(url, headers=headers, json=poam_data, timeout=30)
     elif http_method == "PUT":
         response = requests.put(url, headers=headers, json=poam_data, timeout=30)
-    
+
     return response.status_code in [200, 201, 204]
 ```
 
 **Lesson Learned:**
+
 > **Checkpointing is essential for production modular inputs. Always implement it from the start, not as an afterthought.**
 
 **Best Practices:**
+
 - ✅ Use KVStoreCheckpointer for persistence
 - ✅ Store ISO 8601 timestamps
 - ✅ Filter by multiple date field names (APIs vary)
@@ -967,6 +1094,7 @@ def _send_poam_update(
 - ✅ Log checkpoint updates for debugging
 
 **Files Involved:**
+
 - `package/bin/emass_poam.py` - Input with checkpointing
 - `package/bin/emass_poam_output.py` - Output modular script
 - `CHECKPOINTING_IMPLEMENTATION.md` - Full documentation
@@ -976,6 +1104,7 @@ def _send_poam_update(
 ## Issue 10: Splunkbase Packaging Commands
 
 **Problem:**
+
 - Unclear how to package add-on for Splunkbase submission
 - Multiple UCC commands available but documentation sparse
 
@@ -1000,14 +1129,17 @@ ucc-gen package --path output/TA-suhlabs-eMASS
 ```
 
 **Output:**
+
 - Creates: `TA-suhlabs-eMASS-<version>.tar.gz`
 - Location: Project root directory
 - Ready for: Splunkbase upload
 
 **Lesson Learned:**
+
 > **The `ucc-gen package` command requires the built output directory path, not the source package directory.**
 
 **Splunkbase Checklist:**
+
 - ✅ Version in `globalConfig.json` is correct
 - ✅ `app.manifest` metadata is complete
 - ✅ README and documentation updated
@@ -1021,6 +1153,7 @@ ucc-gen package --path output/TA-suhlabs-eMASS
 ## Issue 11: Security and Compatibility Checks
 
 **Problem:**
+
 - Splunkbase has strict security and compatibility requirements
 - Two specific checks mentioned:
   1. `check_for_existence_of_python_code_block_in_mako_template`
@@ -1029,30 +1162,36 @@ ucc-gen package --path output/TA-suhlabs-eMASS
 **Investigation Results:**
 
 ### Check 1: Mako Templates ✅ PASS
+
 ```bash
 find . -name "*.mako" -o -name "*.tmpl"
 # Result: No files found (only in venv dependencies)
 ```
 
 **Finding:** No Mako templates in project code
+
 - Mako only exists in virtual environment (pip packages)
 - No security vulnerability from deprecated templates
 
 ### Check 2: Binary Compatibility ✅ PASS
+
 ```bash
 find package/bin -type f ! -name "*.py" ! -name "*.sh" ! -name "*.txt"
 # Result: No compiled binaries
 ```
 
 **Finding:** Pure Python implementation
+
 - No compiled binaries distributed
 - Works on all architectures (x86_64, aarch64, etc.)
 - No compatibility issues with ARM-based indexers
 
 **Lesson Learned:**
+
 > **Pure Python add-ons are ideal for Splunkbase - they're secure, portable, and have no architecture dependencies.**
 
 **Best Practices:**
+
 - ✅ Avoid Mako templates (use Jinja2 if templating needed)
 - ✅ Avoid compiled binaries (use pure Python)
 - ✅ Test on multiple architectures if binaries required
@@ -1063,6 +1202,7 @@ find package/bin -type f ! -name "*.py" ! -name "*.sh" ! -name "*.txt"
 ## Summary of New Lessons (2025-11-21)
 
 ### Critical Discoveries:
+
 1. **UCC does NOT support top-level "outputs" page** - use configuration tabs instead
 2. **Checkpointing must be actively implemented** - import alone does nothing
 3. **Configuration tabs are flexible** - can hold any settings, not just accounts
@@ -1071,6 +1211,7 @@ find package/bin -type f ! -name "*.py" ! -name "*.sh" ! -name "*.txt"
 ### Implementation Patterns:
 
 #### Pattern 1: Configuration Tab for Outputs
+
 ```
 Configuration Page
 ├── Account Tab
@@ -1079,6 +1220,7 @@ Configuration Page
 ```
 
 #### Pattern 2: Checkpointing
+
 ```python
 # Initialize → Get → Filter → Process → Update
 ckpt = KVStoreCheckpointer(...)
@@ -1089,6 +1231,7 @@ ckpt.update(key, current_time)
 ```
 
 #### Pattern 3: Modular Output
+
 ```python
 # Separate script: package/bin/{name}_output.py
 # Configured via: Configuration → Output Settings tab
@@ -1096,6 +1239,7 @@ ckpt.update(key, current_time)
 ```
 
 ### Files to Preserve:
+
 - ✅ `globalConfig.json` - Contains output tab configuration
 - ✅ `package/bin/emass_poam.py` - Input with checkpointing
 - ✅ `package/bin/emass_poam_output.py` - Output script

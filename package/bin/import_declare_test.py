@@ -1,33 +1,15 @@
 import os
 import sys
+import re
 
 ta_name = 'TA-suhlabs-eMASS'
-ta_lib_name = 'lib'
-pattern_list = [ta_name, ta_lib_name]
+pattern = re.compile(r"[\\/]etc[\\/]apps[\\/][^\\/]+[\\/]bin[\\/]?$")
+new_paths = [path for path in sys.path if not pattern.search(path) or ta_name in path]
+sys.path = new_paths
 
+current_dir = os.path.dirname(os.path.realpath(__file__))
+app_root = os.path.dirname(current_dir)
+lib_dir = os.path.join(app_root, 'lib')
 
-def get_paths_from_splunk_home(pattern_list):
-    paths = []
-    splunk_home = os.environ.get('SPLUNK_HOME')
-    if splunk_home:
-        for pattern in pattern_list:
-            path = os.path.join(splunk_home, 'etc', 'apps', pattern)
-            if os.path.exists(path):
-                paths.append(path)
-    return paths
-
-
-def get_local_lib_path():
-    paths = []
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    lib_dir = os.path.join(current_dir, '..', 'lib')
-    if os.path.exists(lib_dir):
-        paths.append(lib_dir)
-    return paths
-
-
-all_paths = get_paths_from_splunk_home(pattern_list) + get_local_lib_path()
-
-for path in all_paths:
-    if path not in sys.path:
-        sys.path.insert(0, path)
+if lib_dir not in sys.path:
+    sys.path.insert(0, lib_dir)

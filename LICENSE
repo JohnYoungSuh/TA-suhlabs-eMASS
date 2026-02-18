@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2024 John Young Suh
+Copyright (c) 2025 suhlabs
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Compliance & Availability Notice
+
+This project is an independent, open-source implementation intended to improve
+accessibility and usability of publicly documented APIs.
+
+- This repository contains **no CUI, CTI, classified, sensitive, or confidential information**.
+- No API keys, secrets, credentials, or privileged access are included.
+- The design is based on publicly available OpenAPI patterns and documentation.
+
+This project is **not affiliated with, endorsed by, or operated on behalf of the U.S. Government**.
+
+Out of an abundance of caution and respect for government systems:
+
+> If requested by an authorized government entity, the maintainer will remove
+> or modify this repository to address compliance, security, or policy concerns.
+
+This notice does **not** limit the rights granted under the MIT License to
+copies already obtained.

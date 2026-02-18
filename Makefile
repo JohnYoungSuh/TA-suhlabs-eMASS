@@ -37,7 +37,7 @@ lint:
 build: lint
 	@echo '{"step":"build","ts":"'$$(date -Iseconds)'"}'
 	@rm -rf $(OUT_DIR)
-	@source $(VENV)/bin/activate && ucc-gen build --source $(PKG_DIR) --ta-version 1.0.0
+	@source $(VENV)/bin/activate && ucc-gen build --source $(PKG_DIR) --ta-version 1.0.1
 	@test -d $(OUT_DIR)/TA-suhlabs-eMASS || (echo '{"error":"build failed"}' && exit 1)
 	@./fix_ui.sh
 	@rm -f $(OUT_DIR)/TA-suhlabs-eMASS/appserver/static/openapi.json
