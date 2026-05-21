@@ -1,4 +1,4 @@
-splunk-add-on-ucc-framework==6.0.1
+splunk-add-on-ucc-framework==6.1.0
 addonfactory-splunk-conf-parser-lib
 dunamai
 pyyaml

@@ -3,7 +3,7 @@
         "name": "TA-suhlabs-eMASS",
         "restRoot": "TA_suhlabs_eMASS",
         "displayName": "SuhLabs eMASS Technology Add-on",
-        "version": "1.0.3",
+        "version": "1.0.4",
         "schemaVersion": "0.0.10"
     },
     "pages": {
@@ -242,6 +242,8 @@
                     ]
                 },
                 {
+                    "name": "proxy",
+                    "title": "Proxy Settings",
                     "type": "proxyTab",
                     "proxy_type": true,
                     "username": true,

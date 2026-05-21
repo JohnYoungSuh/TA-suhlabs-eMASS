@@ -5,7 +5,7 @@
     "id": {
       "group": null,
       "name": "TA-suhlabs-eMASS",
-      "version": "1.0.1"
+      "version": "1.0.4"
     },
     "author": [
       {
@@ -18,7 +18,9 @@
     "description": "Splunk Add-on for eMASS. Ingest POA&M data from eMASS.",
     "classification": {
       "intendedAudience": null,
-      "categories": ["Security, Fraud & Compliance"],
+      "categories": [
+        "Security, Fraud & Compliance"
+      ],
       "developmentStatus": null
     },
     "commonInformationModels": null,
@@ -43,6 +45,10 @@
   "inputGroups": null,
   "incompatibleApps": null,
   "platformRequirements": null,
-  "supportedDeployments": ["*"],
-  "targetWorkloads": ["*"]
+  "supportedDeployments": [
+    "*"
+  ],
+  "targetWorkloads": [
+    "*"
+  ]
 }

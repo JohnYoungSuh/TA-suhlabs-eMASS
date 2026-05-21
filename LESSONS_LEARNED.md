@@ -1251,3 +1251,161 @@ ckpt.update(key, current_time)
 **Document Version:** 2.0
 **Last Updated:** 2025-11-21
 **Status:** Complete
+
+---
+
+---
+
+## Session: 2026-04-27 — AppInspect Failures & Build Hardening
+
+**Date:** 2026-04-27
+**Status:** ✅ Resolved
+
+> **Addendum:** UCC 6.0.x generated `[script:./bin/emass_poam.py]` stanzas in `inputs.conf`. UCC 6.1.0 changed to bare service-name stanzas `[emass_poam]`. The `fix_ui.sh` patcher's `^\[script:` pattern silently missed the stanza — no error, just no injection. Pattern updated to `^\[` (all stanzas in inputs.conf are modular inputs). **Lesson: verify patcher output against the actual generated file after every UCC version bump.**
+
+---
+
+### Issue 5: AppInspect `check_admin_external_restmap_conf_python_required` & `check_modular_inputs_python_required`
+
+**Problem:**
+Two AppInspect checks failed on the 1.0.0 release:
+- `check_admin_external_restmap_conf_python_required` — `[admin_external:*]` stanzas in `restmap.conf` missing `python.required`
+- `check_modular_inputs_python_required` — `[script:*]` stanzas in `inputs.conf` missing `python.required`
+
+**Root Cause:**
+UCC-gen 6.0.1 does not emit `python.required = python3` in generated conf files. This field became mandatory for Splunk Cloud Vetting in April 2026.
+
+**Resolution:**
+1. Bumped `splunk-add-on-ucc-framework` to `6.1.0` in **`requirements.txt`** (native support added in 6.1.0)
+2. Added belt-and-suspenders Python patcher in `fix_ui.sh` to inject `python.required = python3` into any `[admin_external:*]` and `[script:*]` stanzas that lack it
+3. Added `validate` checks to assert `python.required` is present in both files after every build
+
+**Lesson Learned:**
+> **`requirements.txt` is the authoritative version pin for pip — `UCC_VERSION` in the Makefile is purely cosmetic documentation. Always update `requirements.txt` when bumping a tool version.**
+
+**Prevention:**
+- Keep `UCC_VERSION` in Makefile in sync with `requirements.txt` (they are now both `6.1.0`)
+- `make validate` now explicitly checks for `python.required` in both conf files
+
+---
+
+### Issue 6: Docker Root-Owned `output/` Blocks Rebuild (Lesson 4 Revisited)
+
+**Problem:**
+`make build` fails with hundreds of `Permission denied` errors when `rm -rf output/` runs. This is a recurrence of Issue 4 (Docker container writes files as root).
+
+**Why Previous Fix Failed:**
+- `chmod -R u+w output/ || true` silently no-ops: you cannot `chmod` files owned by root when running as a non-root user (kernel returns EPERM, not just a permission denied on the file)
+- The `|| true` swallowed the chmod failure, so `rm` still blocked
+
+**Resolution:**
+Replaced `chmod + rm` pattern with `sudo rm -rf $(OUT_DIR)` in both `build` and `clean-volumes` targets. This is the same outcome as the Docker Alpine workaround but works without Docker available.
+
+**Lesson Learned:**
+> **You cannot `chmod` files you don't own. When Docker generates root-owned artifacts, `sudo rm -rf` is the only host-side fix that works without Docker.**
+
+**Quick Fix (one-time):**
+```bash
+sudo rm -rf output/
+make build
+```
+
+**Prevention:**
+- `build` target now runs `sudo rm -rf $(OUT_DIR)` as the first step
+- `clean-volumes` also uses `sudo rm -rf` — no longer relies on Docker Alpine workaround
+
+---
+
+### Issue 7: Hardcoded Version in `validate` Diverges from `build`
+
+**Problem:**
+`make validate` fails with `{"error":"version mismatch"}` because the validate check hardcoded `version = 1.0.0` while the build command used `--ta-version 1.0.1`.
+
+**Root Cause:**
+Version defined in two places — `--ta-version` arg in `build` and grep string in `validate` — with no shared variable enforcing consistency.
+
+**Resolution:**
+Introduced `TA_VERSION := 1.0.1` as a single Makefile variable used in both:
+- `build`: `ucc-gen build --source $(PKG_DIR) --ta-version $(TA_VERSION)`
+- `validate`: `grep -q "version = $(TA_VERSION)" ...`
+
+**Lesson Learned:**
+> **Any value that appears in more than one place in a Makefile must be a variable. Hardcoded strings always drift.**
+
+**Prevention:**
+- To release a new version, change only `TA_VERSION := X.Y.Z` — build and validate stay in sync automatically
+- `validate` output now includes version: `{"status":"ok","version":"1.0.1",...}`
+
+---
+
+### Issue 8: False-Positive Recursive Output Guard
+
+**Problem:**
+`make build` printed `{"error":"recursive output detected"}` on every run after upgrading to UCC 6.1.0, even though there was no real recursion.
+
+**Root Cause:**
+The guard used `find $(OUT_DIR) -name "output" -type d` which matched directories named `output` inside installed lib packages (grpc/protobuf vendored code), not an actual recursive build loop.
+
+**Resolution:**
+Changed to `test ! -d $(OUT_DIR)/output` — only flags the specific case of `output/output/` existing (true recursion).
+
+**Lesson Learned:**
+> **`find -name X` in a deep tree will match unintended directories. Use path-specific checks (`test -d path/to/exact/dir`) for guards that need precision.**
+
+---
+
+### Issue 9: `proxyTab` Missing from UI — True Root Cause: `schemaVersion` Out of UCC's Allowed Range
+
+**Problem:**
+The **Proxy Settings** tab was completely missing from the Splunk Configuration page after every `make build`, despite the tab being correctly defined in `globalConfig.json` and the Python UCC pipeline simulation (debug script) showing it expanded with all 7 entities.
+
+> [!NOTE]
+> **Earlier diagnoses were incorrect.** Two false root causes were documented during investigation:
+> - ~~`fix_ui.sh` wildcard `cp -r` overwrites `globalConfig.json` from UCC static assets~~ — **Disproved:** The UCC library's `package/appserver/static/js/build/` contains only `.js` files, no `globalConfig.json`.
+> - ~~UCC migration pass strips proxyTab from in-memory config~~ — **Disproved:** Debug script confirmed the full pipeline correctly serializes proxy through all migration passes.
+
+**True Root Cause:**
+`globalConfig.json` had `"schemaVersion": "0.0.10"` in its `meta` block. UCC's `handle_global_config_update()` in `global_config_update.py` maintains an explicit allowlist of recognized schema versions:
+
+```python
+allowed_versions_of_schema_version = {
+    "0.0.0", "0.0.1", "0.0.2", "0.0.3", "0.0.4",
+    "0.0.5", "0.0.6", "0.0.7", "0.0.8", "0.0.9",
+}
+```
+
+`"0.0.10"` is **not in this set**. So on every build, UCC silently resets the version to `"0.0.0"` and re-runs **all** migration passes. The 0.0.10 migration (`_remove_oauth_field_from_entites`) then writes `"schemaVersion": "0.0.10"` back to the source file — meaning every subsequent build hits the same trap, creating an infinite cycle where all migrations re-run every time and the proxyTab is never correctly included in the output.
+
+**Resolution:**
+Set `"schemaVersion": "0.0.9"` in `globalConfig.json`'s `meta` block:
+```json
+"meta": {
+    "schemaVersion": "0.0.9"
+}
+```
+This puts the version within the recognized range. UCC runs only the 0.0.10 migration once (which only removes deprecated `oauth_field` attributes — harmless for this TA) and leaves the proxyTab intact.
+
+**Verification Command:**
+After every `make build`, verify all expected tabs are in the compiled output:
+```bash
+jq '.pages.configuration.tabs[].name // .pages.configuration.tabs[].type' \
+  output/TA-suhlabs-eMASS/appserver/static/js/build/globalConfig.json
+```
+Expected output:
+```
+"account"
+"output"
+"proxy"
+"logging"
+```
+
+**Lesson Learned:**
+> **UCC's `handle_global_config_update()` has a hardcoded allowlist of recognized `schemaVersion` values that does NOT include `"0.0.10"`. If your `schemaVersion` is outside the allowlist, UCC silently resets to `"0.0.0"` and re-runs ALL migrations on every build with no warning. Always ensure `schemaVersion` is within the recognized range. Check the allowlist in `global_config_update.py` whenever upgrading UCC.**
+
+---
+
+**Document Version:** 3.3
+**Last Updated:** 2026-05-20
+**Status:** Complete
+
+
