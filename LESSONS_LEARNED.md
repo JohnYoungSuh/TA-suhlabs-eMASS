@@ -1404,8 +1404,74 @@ Expected output:
 
 ---
 
-**Document Version:** 3.3
-**Last Updated:** 2026-05-20
-**Status:** Complete
 
+
+---
+
+## Session: 2026-05-21 — schemaVersion Re-Regression & .agents/rules Init
+
+**Date:** 2026-05-21
+**Status:** ✅ Resolved
+
+---
+
+### Issue 10: schemaVersion 0.0.10 Re-Regression — Input UI Removed
+
+**Problem:**
+`globalConfig.json` `meta.schemaVersion` drifted back to `"0.0.10"` (from a prior
+`make bump` or LLM edit), causing UCC to re-run all migrations on every build.
+The `inputs` page and proxy tab appeared present in the source file but were silently
+stripped or mis-generated in the compiled output, manifesting as the **Inputs nav
+item disappearing** from Splunk Web after deploying the TA.
+
+**Root Cause:**
+Same as Issue 9 — `schemaVersion` outside UCC's allowlist (`{ "0.0.0" … "0.0.9" }`).
+The `make bump` target calls `jq` to update `meta.version` but does NOT touch
+`meta.schemaVersion`. However, when UCC re-runs the 0.0.10 migration it writes
+`"0.0.10"` back to the source file — so any subsequent bump or agent edit that
+re-reads the file will see `"0.0.10"` and perpetuate the cycle.
+
+**Resolution:**
+Set `"schemaVersion": "0.0.9"` in `globalConfig.json`.
+
+**Lesson Learned:**
+
+> **`schemaVersion` is NOT a project version number. It must always stay at `"0.0.9"`
+> (or lower). After any `make bump`, `jq` edit, or LLM modification of
+> `globalConfig.json`, verify `schemaVersion` has not changed.**
+
+**Prevention:**
+- Created `.agents/rules/02-ucc-build-rules.md` with explicit schemaVersion rule.
+- Added post-build tab verification command to rule 02.
+
+---
+
+### Issue 11: .agents/rules/ Directory Created
+
+**Problem:**
+No machine-readable rules existed for coding agents (LLMs) operating on this repo.
+Lessons learned were in `LESSONS_LEARNED.md` (human-readable, 1400+ lines) but
+agents were not reading them before making changes.
+
+**Resolution:**
+Created `.agents/rules/` with four focused rule files:
+
+| File | Covers |
+|---|---|
+| `01-environment.md` | WSL, bash, Python, PowerShell quoting gotchas |
+| `02-ucc-build-rules.md` | schemaVersion, page types, build workflow, AppInspect |
+| `03-ta-architecture.md` | File layout, globalConfig sections, checkpointing pattern |
+| `04-agent-safety.md` | Protected files, debugging hierarchy, commit discipline |
+
+**Lesson Learned:**
+
+> **Lessons learned documents are only effective if agents read them. Machine-readable
+> rule files in `.agents/rules/` are loaded automatically by coding agents and enforce
+> constraints that prose documentation cannot.**
+
+---
+
+**Document Version:** 3.4
+**Last Updated:** 2026-05-21
+**Status:** Complete
 
