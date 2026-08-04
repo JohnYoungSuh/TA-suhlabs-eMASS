@@ -1,2 +1,2 @@
-solnlib>=1.2.0
+solnlib>=5.4.0
 splunktaucclib>=6.0.0
