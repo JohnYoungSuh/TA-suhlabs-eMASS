@@ -1,4 +1,4 @@
-selenium==4.15.2
+selenium==4.46.0
 flask==3.0.0
 opencv-python==4.8.1.78
 pillow==10.1.0
