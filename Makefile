@@ -8,7 +8,7 @@ OUT_DIR := output
 VENV := .venv
 PYTHON := python3.12
 UCC_VERSION := 6.5.2
-TA_VERSION := 1.0.5
+TA_VERSION := 1.0.6
 SPLUNK_VERSION := latest
 
 .PHONY: bump
