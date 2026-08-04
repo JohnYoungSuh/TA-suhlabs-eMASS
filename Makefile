@@ -7,8 +7,8 @@ PKG_DIR := package
 OUT_DIR := output
 VENV := .venv
 PYTHON := python3.12
-UCC_VERSION := 6.1.0
-TA_VERSION := 1.0.4
+UCC_VERSION := 6.5.2
+TA_VERSION := 1.0.5
 SPLUNK_VERSION := latest
 
 .PHONY: bump
@@ -70,6 +70,8 @@ build: lint
 .PHONY: validate
 validate:
 	@echo '{"step":"validate","ts":"'$$(date -Iseconds)'"}'
+	@if [ -d $(OUT_DIR) ] && [ "$$(stat -c %U $(OUT_DIR) 2>/dev/null)" = "root" ]; then sudo chown -R $$(id -u):$$(id -g) $(OUT_DIR) 2>/dev/null || true; fi
+	@find $(OUT_DIR) -maxdepth 2 -name "default.old.*" -type d -exec rm -rf {} + 2>/dev/null || true
 	@test -f $(OUT_DIR)/TA-suhlabs-eMASS/default/app.conf || (echo '{"error":"app.conf missing"}' && exit 1)
 	@test -f $(OUT_DIR)/TA-suhlabs-eMASS/default/restmap.conf || (echo '{"error":"restmap.conf missing"}' && exit 1)
 	@test -d $(OUT_DIR)/TA-suhlabs-eMASS/bin || (echo '{"error":"bin directory missing"}' && exit 1)

@@ -3,7 +3,7 @@
         "name": "TA-suhlabs-eMASS",
         "restRoot": "TA_suhlabs_eMASS",
         "displayName": "SuhLabs eMASS Technology Add-on",
-        "version": "1.0.4",
+        "version": "1.0.5",
         "schemaVersion": "0.0.10"
     },
     "pages": {
@@ -251,8 +251,7 @@
                     "dns_resolution": true
                 },
                 {
-                    "type": "loggingTab",
-                    "label": "Log Level"
+                    "type": "loggingTab"
                 }
             ]
         },

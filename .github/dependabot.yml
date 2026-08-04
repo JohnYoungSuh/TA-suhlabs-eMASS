@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # Python dependencies at the project root (dev and build tools)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Python runtime dependencies packaged inside the Splunk TA
+  - package-ecosystem: "pip"
+    directory: "/package/lib"
+    schedule:
+      interval: "weekly"

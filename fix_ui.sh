@@ -53,14 +53,7 @@ else
     echo "WARNING: No saved globalConfig.json found to restore"
 fi
 
-# Copy redirect.html (critical for UI routing)
-if [ -f "$UCC_UI_SOURCE/templates/redirect.html" ]; then
-    echo "Copying redirect.html..."
-    mkdir -p "$OUTPUT_DIR/appserver/templates"
-    cp "$UCC_UI_SOURCE/templates/redirect.html" "$OUTPUT_DIR/appserver/templates/"
-fi
-
-# Do NOT copy base.html to avoid overwriting our custom one
+# Do NOT copy Mako templates to avoid AppInspect failures
 
 echo "✓ Copied UI files successfully"
 echo "  JS files: $(find $OUTPUT_DIR/appserver/static/js/build -name '*.js' | wc -l)"
