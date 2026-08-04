@@ -5,7 +5,7 @@
 Ingest Plan of Action and Milestones (POA&M) data from eMASS into Splunk for security compliance monitoring and reporting.
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Splunk](https://img.shields.io/badge/Splunk-9.2.1+-green.svg)](https://www.splunk.com)
+[![Splunk](https://img.shields.io/badge/Splunk-10.0.0+-green.svg)](https://www.splunk.com)
 [![UCC](https://img.shields.io/badge/UCC-6.0.1-orange.svg)](https://github.com/splunk/addonfactory-ucc-generator)
 
 ---
@@ -22,7 +22,7 @@ Ingest Plan of Action and Milestones (POA&M) data from eMASS into Splunk for sec
 
 ## Prerequisites
 
-- **Splunk Enterprise** 9.0+ or **Splunk Cloud**
+- **Splunk Enterprise** 10.0+ or **Splunk Cloud**
 - **Python** 3.12+ (for development/building)
 - **eMASS API Access** - Valid API key and System ID
 - **Make** - For build automation (optional but recommended)

@@ -125,7 +125,7 @@ $DOCKER_COMPOSE up -d
 
 echo ""
 echo -e "${YELLOW}Waiting for Splunk to be ready (this takes 2-3 minutes)...${NC}"
-echo "Docker is starting Splunk 9.2.1 with TA-suhlabs-eMASS installed..."
+echo "Docker is starting Splunk 10.0.0 with TA-suhlabs-eMASS installed..."
 
 SPLUNK_READY=false
 for i in {1..60}; do

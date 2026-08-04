@@ -26,7 +26,7 @@ services:
       dockerfile: Dockerfile-splunk-local
       args:
         SPLUNK_APP_PACKAGE: output/TA-suhlabs-eMASS
-        SPLUNK_VERSION: 9.2.1
+        SPLUNK_VERSION: 10.0.0
     container_name: splunk-emass-demo
     ports:
       - "8000:8000"

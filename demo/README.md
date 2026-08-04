@@ -120,7 +120,7 @@ ffmpeg -i demo_output/emass_demo.webm -c:v libx264 -crf 23 -c:a aac demo_output/
                │    - Realistic POA&M data
                │    - Port 4010
                │
-               └──> Splunk 9.2.1 (Docker)
+               └──> Splunk 10.0.0 (Docker)
                     - TA-suhlabs-eMASS installed
                     - Port 8000 (Web UI)
                     - Port 8089 (Management API)
