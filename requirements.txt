@@ -8,3 +8,4 @@ packaging
 certifi
 jinja2
 defusedxml
+splunk-appinspect==4.3.0

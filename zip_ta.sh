@@ -28,6 +28,7 @@ fi
 tar -czf "$PACKAGE_FILE" \
     --exclude "TA-suhlabs-eMASS/local" \
     --exclude "TA-suhlabs-eMASS/metadata/local.meta" \
+    --exclude "TA-suhlabs-eMASS/default.old.*" \
     --exclude "__pycache__" \
     --exclude "*.pyc" \
     --exclude ".DS_Store" \

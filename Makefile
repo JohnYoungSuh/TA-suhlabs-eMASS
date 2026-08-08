@@ -31,6 +31,11 @@ bump:
 zip:
 	@./zip_ta.sh
 
+.PHONY: inspect
+inspect: build validate zip
+	@echo '{"step":"inspect","ts":"'$$(date -Iseconds)'"}'
+	@$(VENV)/bin/splunk-appinspect inspect TA-suhlabs-eMASS.tar.gz --mode precert
+
 .PHONY: preflight
 preflight:
 	@echo '{"step":"preflight","ts":"'$$(date -Iseconds)'"}'
@@ -63,6 +68,7 @@ build: lint
 	@test -d $(OUT_DIR)/TA-suhlabs-eMASS || (echo '{"error":"build failed"}' && exit 1)
 	@./fix_ui.sh
 	@rm -f $(OUT_DIR)/TA-suhlabs-eMASS/appserver/static/openapi.json
+	@rm -rf $(OUT_DIR)/TA-suhlabs-eMASS/appserver/templates
 	@find $(OUT_DIR)/TA-suhlabs-eMASS/lib -name "*.so" -type f -delete
 	@test ! -d $(OUT_DIR)/output || (echo '{"error":"recursive output detected"}' && exit 1)
 	@echo '{"status":"ok","size":'$$(du -sb $(OUT_DIR) | cut -f1)'}'
@@ -124,4 +130,4 @@ clean: clean-volumes
 
 .PHONY: help
 help:
-	@echo "Targets: preflight setup lint build validate image test-unit test-smoke clean clean-volumes"
+	@echo "Targets: preflight setup lint build validate zip inspect image test-unit test-smoke clean clean-volumes"
