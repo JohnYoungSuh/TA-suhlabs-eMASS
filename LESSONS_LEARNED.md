@@ -1475,3 +1475,39 @@ Created `.agents/rules/` with four focused rule files:
 **Last Updated:** 2026-05-21
 **Status:** Complete
 
+---
+
+## Session: 2026-08-07 — Splunkbase AppInspect SLIM validation failure & local environment checks
+
+**Date:** 2026-08-07
+**Status:** ✅ Resolved
+
+---
+
+### Issue 12: AppInspect SLIM validation failure: Version requirement includes no supported version of Splunk Enterprise
+
+**Problem:**
+The add-on failed Splunkbase AppInspect validation with the error:
+`ERROR MESSAGES: manifest.platformRequirements.splunk: Version requirement includes no supported version of Splunk Enterprise: >=10.0.0` (and later `>=9.0.0`).
+This version resolution failure also caused SLIM to flag standard Python environment configuration settings (like `python.version` and `python.required` in `restmap.conf` and `inputs.conf`) as "Undefined setting".
+
+**Root Cause:**
+1. The Splunk Packaging Toolkit (`slim validate`) checks the `app.manifest` compatibility declarations. When a version range constraint (e.g. `>=10.0.0` or `>=9.0.0`) is specified, the validator tries to map it to its internal database of known Splunk Enterprise versions. If it fails to find a matching set of supported versions (because the version of SLIM used by the online validator does not have the version mapped or doesn't support the boundary syntax), the validation fails.
+2. Local AppInspect does not run these SLIM checks if the `slim` binary is missing from the local system `PATH` (which is standard since `slim` must be downloaded manually from the Splunk Developer portal, and the Ubuntu package `slim` is an unrelated X11 login manager). The local tool silently skipped the checks and reported `0 failures`, leading to a discrepancy between local and online reports.
+
+**Resolution:**
+1. Set `"platformRequirements": null` in `package/app.manifest`. Per official Splunk developer specifications, `platformRequirements` is optional. Setting it to `null` bypasses SLIM's strict version boundary check while retaining compatibility metadata.
+2. Added `splunk-appinspect==4.3.0` to `requirements.txt` so that developers running `make setup` have the exact validation CLI version matching Splunkbase.
+3. Added `inspect` target to `Makefile` (`make inspect`) to simplify running the local AppInspect suite.
+4. Added a post-build step in `Makefile` to clean up the generated custom template directory (`rm -rf $(OUT_DIR)/TA-suhlabs-eMASS/appserver/templates`) to resolve the future deprecation warning regarding Mako templates in Splunk 10.4+.
+
+**Lesson Learned:**
+> **Never set `platformRequirements.splunk.Enterprise` to specific version ranges (like `>=10.0.0`) if it causes SLIM validation to fail. Setting it to `null` is the officially supported way to declare broad compatibility without triggering Packaging Toolkit validator database errors. Always verify that the local `splunk-appinspect` is run under `precert` mode, and remember that local runs will silently skip SLIM checks if the `slim` package is missing.**
+
+---
+
+**Document Version:** 3.5
+**Last Updated:** 2026-08-07
+**Status:** Complete
+
+
