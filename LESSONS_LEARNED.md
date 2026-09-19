@@ -1506,8 +1506,134 @@ This version resolution failure also caused SLIM to flag standard Python environ
 
 ---
 
-**Document Version:** 3.5
-**Last Updated:** 2026-08-07
-**Status:** Complete
+**Document Version:** 3.6
+**Last Updated:** 2026-08-25
+**Status:** In Progress
 
+---
 
+## Session: 2026-08-25 — Architecture & Roadmap: TA-eMASS Display Name and API Pull Expansion
+
+**Date:** 2026-08-25  
+**Status:** 📋 Planning / Architecture Baseline  
+
+---
+
+### Issue 13: App Identity, Renaming Strategy, and Multi-Endpoint API Expansion
+
+#### 1. Direct Answers & Identity Strategy
+**Renaming is not a folder rename.**
+- [TA-suhlabs-eMASS is already on Splunkbase as app 8253](https://splunkbase.splunk.com/app/8253) (v1.0.6, ~39 downloads). Splunk treats the folder name as the app ID.
+- Changing `TA-suhlabs-eMASS` → `TA-eMASS` would create a completely new app: no in-place upgrade path, requires new Cloud vetting, invalidates the encrypted-credential realm, resets KV Store collections, changes Web URLs (`/en-US/app/TA-eMASS/...`), and forces existing users to uninstall + reinstall.
+- Splunkbase support cannot reliably rename the folder/app ID in place. Support is only needed if publishing a second listing and requesting to hide/delete app 8253.
+- **Decision:** Keep the folder/app ID intact; update the display name (Splunk Web UI + Splunkbase listing title/description).
+
+#### 2. Chosen Identity Matrix
+
+| Layer | Value | Change? |
+| :--- | :--- | :--- |
+| **Folder / App ID** | `TA-suhlabs-eMASS` | **No** |
+| **UCC `meta.name` / `restRoot`** | `TA-suhlabs-eMASS` / `TA_suhlabs_emass` | **No** |
+| **Conf / Credential Realm** | `ta_suhlabs_emass_account` | **No** |
+| **Display Name** | `TA-eMASS` (or `eMASS Technology Add-on`) | **Yes** |
+| **Splunkbase Listing Title** | Same display name (`TA-eMASS`) | **Yes** (via publisher portal) |
+
+#### 3. Current vs. Target Architecture
+Today the TA only GETs one endpoint, hardcoded in [`package/bin/emass_poam.py`](package/bin/emass_poam.py):
+`{base_url}/api/systems/{system_id}/poams`
+
+Account config in [`globalConfig.json`](globalConfig.json) requires a single `system_id`, which blocks instance-wide pulls (`/api/systems`, dashboards, workflows).
+
+eMASS REST API v3.22 (PDF + OpenAPI) exposes ~80 GET paths across:
+- **Core RMF:** systems, roles, controls, test-results, POA&Ms, milestones, artifacts, PAC/CAC
+- **Assets:** hardware/software baseline
+- **Uploads (mostly POST, not pull):** device/cloud/container/static-code scans
+- **Workflows, CMMC**
+- **~50 dashboard export GETs:** (many org-specific: VA, Coast Guard, CMMC)
+
+> [!IMPORTANT]
+> **Do not add one UCC modular input per path.** Use a shared HTTP client + resource catalog architecture.
+
+```mermaid
+flowchart LR
+    subgraph splunk ["Splunk TA"]
+        Account["Account: URL + API Key"]
+        PoamInput["emass_poam (existing)"]
+        CollectInput["emass_collect (new)"]
+        Client["emass_client.py"]
+    end
+    subgraph emass ["eMASS API v3.22"]
+        Poams["GET /api/systems/{id}/poams"]
+        OtherGets["Other GET resources"]
+    end
+
+    Account --> PoamInput
+    Account --> CollectInput
+    PoamInput --> Client
+    CollectInput --> Client
+    Client --> Poams
+    Client --> OtherGets
+```
+
+#### 4. OpenAPI Specification Reference
+- **Source of truth for the catalog:** Archived spec `eMASSRestOpenApi.yaml` aligned to eMASS REST API v3.22 (5 Dec 2024).
+- Vendor a copy under `docs/openapi/eMASSRestOpenApi.yaml` (reference only — do not ship in package; [`Makefile`](Makefile) strips UCC `openapi.json`).
+- Recheck `mitre/emass_client` before implementation in case the spec moved past v3.22.
+
+#### 5. Phased Implementation Plan
+
+##### Phase 0 — Display Name Only (No Identity Break)
+Update user-visible strings, not internal identity:
+- [`globalConfig.json`](globalConfig.json) `meta.displayName` → `TA-eMASS`
+- [`package/app.manifest`](package/app.manifest) `info.title` and `description`
+- `README.md` / release notes / Splunkbase listing title
+- Leave `meta.name`, `restRoot`, `zip_ta.sh` `APP_NAME`, `package/bin/import_declare_test.py`, checkpointer app names, and credential realms unchanged.
+- Bump version via `make bump` (likely `1.1.0` when shipped with new collectors).
+
+##### Phase 1 — Shared eMASS Client (Unblocks All Later Pulls)
+Add [`package/bin/emass_client.py`](package/bin/emass_client.py) used by both existing POA&M and new collectors:
+- **Headers:** `api-key`, optional `user-uid` (PDF §3.1; `user-uid` required only for POST/PUT/DELETE when the org requires actionable requests).
+- **Envelope Handling:** Parse meta / data / pagination (`totalCount`, `nextPageUrl`, HTTP 490 = too much data in one batch).
+- **Pagination & Batching:** Follow `nextPageUrl` until exhausted; on 490, split the request (e.g. by systemId or date window).
+- **Resilience:** Timeouts, proxy configuration from UCC proxy tab, structured errors.
+- **Query Params:** Do not invent query params. (Current POA&M code sends `lastModifiedDate` which is not in the v3.22 POA&M GET spec; documented filters are `scheduledCompletionDateStart`/`End`, `controlAcronyms`, `assessmentProcedures`, `ccis`, `systemOnly`). Checkpointing stays client-side until documented API filters exist.
+- **Account Model (Backward Compatible):** Keep `system_id` on the account as an optional default (`required: false`). New inputs may override `system_id` or iterate `/api/systems` when empty. Existing saved accounts continue working.
+- **Refactor:** Update [`package/bin/emass_poam.py`](package/bin/emass_poam.py) to use the shared client so sourcetype `emass:poam` and input stanza `[emass_poam://...]` remain valid.
+
+##### Phase 2 — Catalog-Driven GET Collector
+Add one UCC input service `emass_collect` in [`globalConfig.json`](globalConfig.json) `pages.inputs.services` (keep `emass_poam`):
+- **Fields:** `name`, `account`, `interval`, `index`, `resource` (dropdown from catalog), optional `system_id` override.
+- **Handler:** `package/bin/emass_collect.py`.
+- **Resource Catalog:** Python module (generated or hand-maintained from OpenAPI GET paths) with path template, whether `{systemId}` is required, sourcetype, and checkpoint key.
+- **First-Wave Resources (High Value, Documented GET):**
+  - `systems` — `/api/systems` and `/api/systems/{systemId}` → `emass:system`
+  - `controls` — `/api/systems/{systemId}/controls` → `emass:control`
+  - `test_results` — `/api/systems/{systemId}/test-results` → `emass:testresult`
+  - `poams` — existing path → `emass:poam` (also reachable via new input)
+  - `milestones` — `/api/systems/{systemId}/poams/{poamId}/milestones` (needs POA&M IDs from prior pull or nested fetch)
+  - `artifacts` — metadata GET only; skip `/artifacts-export` (binary files)
+  - `hw_baseline` / `sw_baseline`
+  - `system_roles`, `pac`, `cac`
+- **Deferred:** Scan-result POSTs, workflow POST, CMMC (unless a CMMC instance is available), VA/USCG-only dashboards, artifact file downloads.
+- **Checkpointing:** KV Store collection names stay under app `TA-suhlabs-eMASS` (e.g. `ta_suhlabs_emass_emass_collect`).
+
+##### Phase 3 — Dashboards and Instance-Wide GETs
+Same `emass_collect` resource dropdown, no new input types:
+- **Workflows:** `/api/workflows/definitions`, `/api/workflows/instances`
+- **Generic Dashboards First:** `system-status`, `control-compliance`, `poam-summary/details`, `hardware/software`, `vulnerability`, `device-findings`
+- **Org-Specific Dashboards:** Behind the same catalog, documented as optional (VA / Coast Guard / CMMC).
+
+##### Phase 4 — Verification
+1. `make build && make validate && make inspect`
+2. Confirm compiled tabs still include `account` / `output` / `proxy` / `logging` and both input services (`emass_poam`, `emass_collect`).
+3. Local Docker Splunk: Install over existing `TA-suhlabs-eMASS` and confirm seamless upgrade (not a second app).
+4. Prism/mock on `:4010` against vendored OpenAPI for GET coverage.
+5. Splunk Web UI: Validate configuration display name + new Inputs resource dropdown end-to-end.
+6. Splunkbase: Update listing title/description only (same app 8253; standard Cloud vetting version bump).
+
+#### 6. Out of Scope
+- Folder rename / new Splunkbase app ID
+- Shipping OpenAPI JSON inside the TA build artifact
+- Changing `restRoot` or credential realms
+- Write-path expansion (POST/PUT exists only for POA&M output)
+- Client-certificate / mTLS UI (API key is standard per v3.22; add later if required by target instances)
